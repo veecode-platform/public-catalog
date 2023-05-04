@@ -1,0 +1,5 @@
+---
+distribution_name: ${{ values.name}}
+domain: ${{ values.domain }}
+zoneid: ${{ values.zoneid }}
+acm_certificate_arn: ${{ values.acmCertificateArn }}

@@ -1,0 +1,9 @@
+site_name: RDS Template 2.0
+site_description: Template for devops 
+
+nav:
+  - Introduction: index.md
+
+plugins:
+  - techdocs-core
+

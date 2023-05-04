@@ -1,0 +1,130 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: terraform-site-template-github
+  title: AWS Site S3 Template
+  description: Provision AWS Site S3 using Terraform and Github Actions
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - platform-templates
+    - s3
+    - site
+    - terraform
+spec:
+  owner: veecode/platform
+  type: devops
+  parameters:
+    - title: Site Configuration
+      required:
+        - name
+        - domain
+      properties:
+        name:
+          title: Site name
+          type: string
+          description: Specifies the site name
+        domain:
+          title: Domain site name
+          type: string
+          description: Specifies the domain name
+        acmCertificateArn:
+          title: ACM Certificate ARN
+          type: string
+          description: Specifies the ACM Certificate ARN
+        zoneid:
+          title: Route 53 Hosted zone ID
+          type: string
+          description: Specifies the Zone ID
+        
+    - title: Terraform Configuration
+      required:
+        - terraformStateBucketName
+        - terraformStateBucketRegion
+      properties:
+        terraformStateBucketName:
+          title: Terraform State Bucket Name
+          type: string
+          description: Specifies your Terraform State Bucket
+
+        terraformStateBucketRegion:
+          title: Bucket Region
+          type: string
+          description: Specifies the Terraform State Bucket region
+          default: 'us-east-1'
+          enum:
+            - 'us-east-2'
+            - 'us-east-1'
+            - 'us-west-1'
+            - 'us-west-2'
+          enumNames:
+            - 'US East (Ohio)'
+            - 'US East (N. Virginia)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+          
+        infracost:
+          title: Enable Infracost Estimate
+          type: boolean
+          default: false
+
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Choose a location to create the EKS Cluster Pipeline
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton      
+        values:
+          name: ${{ parameters.name }}
+          domain: ${{ parameters.domain }}
+          zoneid: ${{ parameters.zoneid }}
+          terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
+          destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          owner: ${{ parameters.owner }}
+          terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
+          acmCertificateArn: ${{ parameters.acmCertificateArn }}
+    
+    - name: Check Infracost
+      if: ${{ parameters.infracost === false }}
+      action: fs:delete
+      input:
+        files: 
+          - ./.github/workflows/infracost.yml
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: Site ${{ parameters.domain }}
+        repoUrl: ${{ parameters.repoUrl }}
+    
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+  
+  

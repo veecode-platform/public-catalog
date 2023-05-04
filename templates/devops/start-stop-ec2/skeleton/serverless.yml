@@ -1,0 +1,41 @@
+service: ${{ values.componentId }}
+frameworkVersion: "${{ values.framework_version }}"
+
+provider:
+  name: aws
+  runtime: nodejs${{ values.runtime }}.x
+  stage: ${{ values.stage }}
+  region: ${{ values.region }}
+  memorySize: ${{ values.memory_size }}
+  timeout: ${{ values.timeout }}
+  {%- if values.bucket == 'custom' %}
+  deploymentBucket:
+    name: ${file(./config/config.${{ values.stage }}.yaml):deploymentBucket}
+    blockPublicAccess: true
+    skipPolicySetup: true
+  {%- endif %}
+  environment:
+    INSTANCE_IDS: "{% for instanceId in values.instance_ids | string | list %}${{ instanceId }}{% endfor %}"
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+          - "ec2:StartInstances"
+          - "ec2:StopInstances"
+          Resource: "*" 
+          
+plugins:
+  - serverless-offline
+  
+functions:
+  start:
+    handler: src/handler.start
+    name: ${{ values.componentId }}-start
+    events:
+      - schedule: cron(${{ values.start_time }} ? * ${{ values.start_day_init }}-${{ values.start_day_end }} *) 
+  stop:
+    handler: src/handler.stop
+    name: ${{ values.componentId }}-stop
+    events:
+      - schedule: cron(${{ values.stop_time }} ? * ${{ values.stop_day_init }}-${{ values.stop_day_end }} *)

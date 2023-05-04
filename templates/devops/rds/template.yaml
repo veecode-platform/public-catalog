@@ -1,0 +1,153 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: terraform-rds-template-github
+  title: RDS Template
+  description: RDS Template using Terraform and Github Actions
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - platform-templates
+    - rds
+    - terraform
+spec:
+  owner: veecode/platform
+  type: devops
+  parameters:
+    - title: RDS Configuration
+      required:
+        - name
+        - username
+        - password
+        - instance_name
+        - instance_type
+      properties:
+        instance_name:
+          title: RDS Instance Name
+          type: string
+          description: Specifies the RDS Instance Name
+        instance_type:
+          title: RDS Instance Type
+          type: string
+          description: Specifies the RDS instance type
+          default: db.t3.micro
+          enum:
+            - db.t3.micro
+            - db.m5.large
+            - db.m5.xlarge
+            - db.t4g.micro
+            - db.m6g.large
+            - db.m6g.xlarge
+          enumNames:
+            - "db.t3.micro (vCPU:2, Mem: 1Gib)"
+            - "db.m5.large (vCPU:2, Mem: 8Gib)"
+            - "db.m5.xlarge (vCPU:4, Mem: 16Gib)"
+            - "db.t4g.micro (vCPU:2, Mem: 1Gib) ARM"
+            - "db.m6g.large (vCPU:2, Mem: 8Gib) ARM"
+            - "db.m6g.xlarge (vCPU:4, Mem: 16Gib) ARM"
+        name:
+          title: Database Name
+          type: string
+          description: Specifies the Database Name
+        username:
+          title: Username
+          type: string
+          description: Specifies the DB Username
+        password:
+          title: Password
+          type: string
+          ui:widget: password
+          description: Specifies the DB Password
+
+    - title: Terraform Configuration
+      required:
+        - terraformStateBucketName
+        - terraformStateBucketRegion
+      properties:
+        terraformStateBucketName:
+          title: Terraform State Bucket Name
+          type: string
+          description: Specifies your Terraform State Bucket
+
+        terraformStateBucketRegion:
+          title: Bucket Region
+          type: string
+          description: Specifies the Terraform State Bucket region
+          default: 'us-east-1'
+          enum:
+            - 'us-east-2'
+            - 'us-east-1'
+            - 'us-west-1'
+            - 'us-west-2'
+          enumNames:
+            - 'US East (Ohio)'
+            - 'US East (N. Virginia)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+          
+        infracost:
+          title: Enable Infracost Estimate
+          type: boolean
+          default: false
+
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Choose a location to create the RDS Pipeline
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton      
+        values:
+          name: ${{ parameters.name }}
+          username: ${{ parameters.username }}
+          password: ${{ parameters.password }}
+          instance_name: ${{ parameters.instance_name }}
+          instance_type: ${{ parameters.instance_type }}
+          terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
+          destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          owner: ${{ parameters.owner }}
+          terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
+    
+    - name: Check Infracost
+      if: ${{ parameters.infracost === false }}
+      action: fs:delete
+      input:
+        files: 
+          - ./.github/workflows/infracost.yml
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: RDS Name ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+    
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+  
+  

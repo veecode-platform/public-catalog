@@ -1,0 +1,9 @@
+---
+allocated_storage: 10
+engine: "postgres"
+engine_version: "14"
+instance_class: "${{ values.instance_type }}"
+name: "${{ values.name }}"
+username: "${{ values.username }}"
+password: "${{ values.password }}"
+skip_final_snapshot: false

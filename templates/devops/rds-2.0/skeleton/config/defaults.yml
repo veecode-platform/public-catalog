@@ -1,0 +1,38 @@
+#create aws db subnet group
+  name_db_subnet_group: "${{ values.subnet }}" 
+  description_db_subnet_group: "Create By Platform Template"
+  subnet_ids: "{% for subnetId in values.subnet_ids | string | list %}${{ subnetId }}{% endfor %}"
+  
+#create aws db parameter group
+  name_db_parameter_group: "${{ values.engine }}-parameters" 
+  family_db_parameter_group: "${{ values.engine }}-parameters" 
+  description_db_parameter_group: "Create By Platform Template"
+#create aws instance_RDS
+  allocated_storage: ${{ values.allocated_storage }}                 
+  max_allocated_storage: ${{ values.upscalling }}            
+  engine: "${{ values.engine }}"
+  engine_version: "${{ values.engine_version }}"
+  instance_class: "${{ values.instance_class }}"     
+  identifier: "${{ values.starting_base }}"
+  db_name: "${{ values.starting_base }}"
+  username: "${{ values.starting_username }}"           
+  password: ${{ values.password_db }}
+  multi_az: ${{ values.multi_az }}                                     
+  storage_type: "${{ values.storage_type }}"
+  backup_retention_period: ${{ values.backup_retention }}
+  backup_window: {% if values.backup_window == 'default' %} "04:00-06:00" {% else %}"${{ values.start_time_backup }}-${{ values.stop_time_backup }}"{% endif %}
+  maintenance_window: {% if values.maintenance_window == 'default' %} "sun:02:00-sun:04:00" {% else %}"${{ values.start_day_maintenance }}:${{ values.start_time_maintenance }}-${{ values.stop_day_maintenance }}:${{ values.stop_time_maintenance }}"{% endif %}
+  publicly_accessible: ${{ values.access_type }}
+  skip_final_snapshot: ${{ values.snapshot }}
+  enabled_cloudwatch_logs_exports: ["${{ values.engine }}", "upgrade"]
+  iam_database_authentication_enabled: ${{ values.iam_database_authentication }}
+  monitoring_interval: ${{ values.monitoring_interval }}
+  performance_insights_retention_period: ${{ values.performance_insights_retention_period }}
+  deletion_protection: ${{ values.deletion_protection }}
+  storage_encrypted: ${{ values.encrypted_storage }}
+  tags: |
+      Application = "${{ values.componentId }}"
+    {% for tag,value in values.tags  %} 
+      ${{ tag }} = "${{ value }}"
+    {% endfor %}
+name_suffix: ${{ values.structure_automation }} # vpc

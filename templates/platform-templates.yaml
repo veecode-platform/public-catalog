@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: devportal-public-templates
+  description: A collection of all Platform templates
+spec:
+  targets:
+    - ./nextJS/template.yaml
+    - ./devops/static-site/template.yaml
+    - ./devops/eks/template.yaml
+    - ./devops/rds/template.yaml
+    - ./devops/rds-2.0/template.yaml
+    - ./devops/insomnia-project/template.yaml
+    - ./devops/openapi-project/template.yaml
+    - ./devops/start-stop-ec2/template.yaml
+    - ./java/spring-boot-3/template.yaml
+    - ./java/quarkus/template.yaml
