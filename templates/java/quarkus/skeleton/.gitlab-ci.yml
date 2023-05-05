@@ -1,50 +1,52 @@
+image: ubuntu:latest
+
 stages:
   - build
   - publish_k8s
   - publish_mockserver
   - publish_spechouse
 
+variables:
+  API_TOKEN_GITLAB: $API_TOKEN_GITLAB
+
 build_project:
   stage: build
-  image: gradle:jdk-${{ values.javaVersion }}
+  image: gradle:jdk-${{ values.javaVersion }}-alpine
+  variables:
+    DOCKER_REGISTRY: {% if values.docker_window == 'custom' %}${{ values.docker_generic }}{% else %}registry.hub.docker.com{% endif %}
+    DOCKER_NAMESPACE: veecode
+    DOCKER_USERNAME: $DOCKER_USERNAME
+    DOCKER_PASSWORD: $DOCKER_PASSWORD
+    GRADLE_OPTS: "-Dquarkus.kubernetes.ports.http.host-port=4003"
+    GRADLE_BUILD_OPTS: "-Dquarkus.container-image.registry=$DOCKER_REGISTRY \
+                        -Dquarkus.container-image.group=$DOCKER_NAMESPACE \
+                        -Dquarkus.kubernetes.namespace=vkpr \
+                        -Dquarkus.kubernetes.ingress.expose=true \
+                        -Dquarkus.kubernetes.ingress.ingress-class-name=kong \
+                        -Dquarkus.kubernetes.ingress.host=rest.platform.vee.codes \
+                        -Dquarkus.kubernetes.ingress.tls.\"rest.platform.vee.codes-tls\".enabled=true \
+                        -Dquarkus.kubernetes.ingress.tls.\"rest.platform.vee.codes-tls\".hosts=rest.platform.vee.codes \
+                        -Dquarkus.kubernetes.ingress.annotations.\"backstage.io/kubernetes-id\"=spring-sample-app \
+                        -Dquarkus.kubernetes.ingress.annotations.\"cert-manager.io/cluster-issuer\"=certmanager-issuer \
+                        -Dquarkus.kubernetes.ingress.annotations.\"konghq.com/https-redirect-status-code\"=308 \
+                        -Dquarkus.kubernetes.ingress.annotations.\"konghq.com/preserve-host\"=true \
+                        -Dquarkus.kubernetes.ingress.annotations.\"konghq.com/protocols\"=https \
+                        -Dquarkus.kubernetes.ingress.annotations.\"konghq.com/strip-path\"=true \
+                        -Dquarkus.kubernetes.ingress.annotations.\"kubernetes.io/tls-acme\"=true"
   script:
-    - gradle wrapper
-    - ./gradlew clean build \
-      -Dquarkus.kubernetes.ports."http".host-port=4003 \
-      -Dquarkus.container-image.build=true \
-      -Dquarkus.container-image.push=true \
-      {%- if values.docker_window == 'custom' %}
-      -Dquarkus.container-image.registry=${{ values.docker_generic }} \
-      {%- else %}
-      -Dquarkus.container-image.registry=registry.hub.docker.com \
-      {%- endif %}
-      -Dquarkus.container-image.group=${{ values.docker_organization }} \
-      -Dquarkus.container-image.username=$DOCKER_USERNAME \
-      -Dquarkus.container-image.password=$DOCKER_PASSWORD \
-      -Dquarkus.kubernetes.namespace=vkpr \
-      -Dquarkus.kubernetes.ingress.expose=true \
-      -Dquarkus.kubernetes.ingress.ingress-class-name=kong \
-      -Dquarkus.kubernetes.ingress.host=rest.platform.vee.codes \
-      -Dquarkus.kubernetes.ingress.tls."rest.platform.vee.codes-tls".enabled=true \
-      -Dquarkus.kubernetes.ingress.tls."rest.platform.vee.codes-tls".hosts=rest.platform.vee.codes \
-      -Dquarkus.kubernetes.ingress.annotations."backstage.io/kubernetes-id"=spring-sample-app \
-      -Dquarkus.kubernetes.ingress.annotations."cert-manager.io/cluster-issuer"=certmanager-issuer \
-      -Dquarkus.kubernetes.ingress.annotations."konghq.com/https-redirect-status-code"=308 \
-      -Dquarkus.kubernetes.ingress.annotations."konghq.com/preserve-host"=true \
-      -Dquarkus.kubernetes.ingress.annotations."konghq.com/protocols"=https \
-      -Dquarkus.kubernetes.ingress.annotations."konghq.com/strip-path"=true \
-      -Dquarkus.kubernetes.ingress.annotations."kubernetes.io/tls-acme"=true
+    - ./gradlew clean build $GRADLE_OPTS $GRADLE_BUILD_OPTS
     {%- if values.exportKongKubernetes %}
     - npx insomnia-inso generate config "$(cat .insomnia/ApiSpec/spc_*.yml | yq '.fileName')" --type kubernetes --output ./k8s/kong-kubernetes.yaml
     {%- endif %}
 
 Publish K8S Artifact:
-  #image: ubuntu-latest
-  image: dmnemec/copy_file_to_another_repo_action:latest
-  variables:
-    API_TOKEN_GITHUB: $API_TOKEN_GITHUB
+  stage: publish_k8s
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -sL https://gitlab.vertigo-devops.com/Vjunior/project-quarkus/-/raw/main/copy_file_to_another_repo_action?inline=false > copy_file_to_another_repo_action
+    - chmod +x copy_file_to_another_repo_action
   script:
-    - copy_file_to_another_repo_action \
+    - ./copy_file_to_another_repo_action \
         --source_file=build/kubernetes/kubernetes.yml \
         --destination_repo=${{ values.argoRepoUrl }} \
         --destination_folder=/${{ values.componentId }}/ \
@@ -55,7 +57,6 @@ Publish K8S Artifact:
 
 publish-spec-to-mockserver:
   stage: publish_mockserver
-  image: ubuntu:latest
   variables:
     MOCK_SERVER: "${{ values.mockserverUrl }}"
     NAME: ""
@@ -98,9 +99,7 @@ publish-spec-to-mockserver:
 
 publish_to_spec_house:
   stage: publish_spechouse
-  image: ubuntu-latest
   variables:
-    API_TOKEN_GITLAB: $API_TOKEN_GITLAB
     BRANCH: $CI_COMMIT_REF_NAME
     USER_NAME: $GITLAB_USER_NAME
   before_script:
