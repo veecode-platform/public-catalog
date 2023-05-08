@@ -10,7 +10,7 @@ repositories {
 
 dependencies {
     implementation enforcedPlatform("${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}")
-	{%- if values.database != 'none' %}
+	{%- if values.database_window != 'default' %}
     implementation group: 'io.quarkus', name: 'quarkus-hibernate-orm-panache', version: '2.16.6.Final'
 	{%- endif %}
     {%- if values.database == 'mysql' %}

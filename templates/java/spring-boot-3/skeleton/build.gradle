@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-	{%- if values.database != 'none' %}
+	{%- if values.database_window != 'default' %}
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	{%- endif %}
 	{%- if values.database == 'mysql' %}
