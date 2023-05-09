@@ -3,8 +3,16 @@ image: ubuntu:latest
 stages:
   - build
   - publish_k8s
+  {%- if values.kongExport %}
+  - export_kong
+  {%- endif %}
   - publish_mockserver
+  - build_template
   - publish_spechouse
+  - build_and_publish_spec
+  {%- if values.observability_window == "custom" %}
+  - publish_dashboard_grafana
+  {%- endif %}
 
 variables:
   API_TOKEN_GITLAB: $API_TOKEN_GITLAB
@@ -14,7 +22,7 @@ build_project:
   image: gradle:jdk-${{ values.javaVersion }}-alpine
   variables:
     DOCKER_REGISTRY: {% if values.docker_window == 'custom' %}${{ values.docker_generic }}{% else %}registry.hub.docker.com{% endif %}
-    DOCKER_NAMESPACE: veecode
+    DOCKER_NAMESPACE: ${{ values.docker_organization }}
     DOCKER_USERNAME: $DOCKER_USERNAME
     DOCKER_PASSWORD: $DOCKER_PASSWORD
     GRADLE_OPTS: "-Dquarkus.kubernetes.ports.http.host-port=4003"
@@ -35,78 +43,166 @@ build_project:
                         -Dquarkus.kubernetes.ingress.annotations.\"kubernetes.io/tls-acme\"=true"
   script:
     - ./gradlew clean build $GRADLE_OPTS $GRADLE_BUILD_OPTS
-    {%- if values.exportKongKubernetes %}
+   {%- if values.exportKongKubernetes %}
     - npx insomnia-inso generate config "$(cat .insomnia/ApiSpec/spc_*.yml | yq '.fileName')" --type kubernetes --output ./k8s/kong-kubernetes.yaml
-    {%- endif %}
+   {%- endif %}
 
-Publish K8S Artifact:
+publish_k8s:
   stage: publish_k8s
+  variables:
+    CI_REGISTRY_USER: $CI_REGISTRY_USER
+    CI_REGISTRY_PASSWORD: $API_TOKEN_GITLAB
   before_script:
-    - apt-get update && apt-get install -y curl
-    - curl -sL https://gitlab.vertigo-devops.com/Vjunior/project-quarkus/-/raw/main/copy_file_to_another_repo_action?inline=false > copy_file_to_another_repo_action
-    - chmod +x copy_file_to_another_repo_action
+    - apt-get update
+    - apt-get install -y git
+    - apt-get update && apt-get install -y apt-transport-https gnupg2 curl kubectl
+    - curl -sL https://github.com/mikefarah/yq/releases/download/v4.12.1/yq_linux_amd64 -o /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    - yq --version
+    - curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    - echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
   script:
-    - ./copy_file_to_another_repo_action \
-        --source_file=build/kubernetes/kubernetes.yml \
-        --destination_repo=${{ values.argoRepoUrl }} \
-        --destination_folder=/${{ values.componentId }}/ \
-        --destination_branch=master \
-        --user_email=veecode-bot@vee.codes \
-        --user_name=veecode-bot \
-        --commit_message='A custom message for the commit'
+    - mkdir k8s/
+    - kubectl create deployment spring-sample-app --namespace=vkpr --port=8080 --replicas=1 --image=docker.io/veecode/spring-sample-app:latest --dry-run=client -o=yaml > ./k8s/deployment.yaml
+    - yq e '.metadata.labels."backstage.io/kubernetes-id"="spring-sample-app" | .spec.template.metadata.labels."backstage.io/kubernetes-id"="spring-sample-app" | .spec.template.spec.containers[0].imagePullPolicy="IfNotPresent" | .spec.template.spec.containers[0].resources.requests.memory="256Mi" | .spec.template.spec.containers[0].resources.limits.memory="512Mi" | del(.status) | del(.metadata.creationTimestamp) | del(.spec.template.metadata.creationTimestamp) | del(.spec.strategy)' -i ./k8s/deployment.yaml
+    - kubectl create service clusterip spring-sample-app --namespace=vkpr --tcp=8080:8080 --dry-run=client -o=yaml > ./k8s/service.yaml
+    - yq e 'del(.metadata.creationTimestamp) | del(.status) | .metadata.labels."backstage.io/kubernetes-id"="spring-sample-app"' -i ./k8s/service.yaml
+    - kubectl create ingress spring-sample-app --class=kong --namespace=vkpr --annotation "cert-manager.io/cluster-issuer"="certmanager-issuer" --annotation "konghq.com/https-redirect-status-code"="308" --annotation "kubernetes.io/tls-acme"="true" --annotation "konghq.com/strip-path"="true" --annotation "konghq.com/preserve-host"="true" --annotation "konghq.com/protocols"="https" --rule="rest.platform.vee.codes/spring-sample-app*=spring-sample-app:8080,tls=rest.platform.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
+    - yq e 'del(.metadata.creationTimestamp) | del(.status)' -i ./k8s/ingress.yaml
+    - yq e '.metadata.labels."backstage.io/kubernetes-id"="spring-sample-app"' -i ./k8s/ingress.yaml
+    - git clone https://oauth2:$API_TOKEN_GITLAB@gitlab.com/$CI_REGISTRY_USER/${{ values.argoRepoUrl }}.git
+    - cp -r k8s ${{ values.argoRepoUrl }}/${{ values.componentId }}
+    - cd ${{ values.argoRepoUrl }} #check
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git config --global user.name "$CI_REGISTRY_USER"
+    - git add .
+    - git commit -m "Add Kubernetes files"
+    - git push origin main # check
+    
+{%- if values.kongExport %}    
+export_kong_kubernetes:
+  stage: export_kong
+  before_script:
+    - apt-get update && apt-get -y install wget
+    - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    - chmod a+x /usr/local/bin/yq
+    - yq --version
+  script:
+    - test -f .insomnia/ApiSpec/spc_*.yml && export WORKSPACE_EXISTS=true || export WORKSPACE_EXISTS=false
+    - apt-get -y install jq;
+    - curl -sSfL https://github.com/Kong/setup-inso/releases/download/v1/setup-inso_1.1.0_linux_amd64.tar.gz | tar -xz -C /usr/local/bin;
+    - inso version;
+    - inso export spec "$(cat .insomnia/ApiSpec/spc_*.yml | yq '.fileName')"  --output ./openapi-swagger.yaml;
+    - inso generate config "$(cat .insomnia/ApiSpec/spc_*.yml | yq '.fileName')" --type kubernetes --output ./k8s/kong-kubernetes.yaml;
+{%- endif %}
 
-publish-spec-to-mockserver:
+publish-mockserver:
   stage: publish_mockserver
   variables:
     MOCK_SERVER: "${{ values.mockserverUrl }}"
     NAME: ""
   before_script:
-    - apt-get update && apt-get install -y wget curl
+    - apt-get update -qq && apt-get install -y wget jq curl xz-utils python3
     - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
     - chmod a+x /usr/local/bin/yq
     - yq --version
-  #check
+    - curl -SfL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+    - python3 get-pip.py --user
+    - export PATH="$HOME/.local/bin:$PATH"
+    - pip3 --version
+    - pip3 install pyyaml
+    - curl -SfL https://github.com/Kong/insomnia/releases/download/lib@3.14.0/inso-linux-3.14.0.tar.xz -o inso.tar.xz
+    - tar -xvf inso.tar.xz -C /usr/local/bin/ inso
   script:
-    - test -f .insomnia/ApiSpec/spc_*.yml && export CHECK_INSOMNIA_WORKSPACE=true || export CHECK_INSOMNIA_WORKSPACE=false
-    - export NAME=$(echo $CI_PROJECT_NAME | awk -F / '{print $2 }')
-    - if [ $CHECK_INSOMNIA_WORKSPACE == "true" ]; then
-        wget -qO - https://insomnia.rest/insomnia/insomnia/latest/linux?app=com.insomnia.app&source=website | tar -xz -C /tmp;
-        export PATH="/tmp/Insomnia:$PATH";
-        inso --version;
-        inso export spec "$(cat .insomnia/ApiSpec/spc_*.yml | yq '.fileName')" --output ./openapi-swagger.yaml;
+    - |
+      if [[ -n $(ls -A .insomnia/ApiSpec/spc_*.yml) ]]; then
+        FILE_NAME=$(cat .insomnia/ApiSpec/spc_*.yml | yq '.fileName' -r)
+        inso export spec "$FILE_NAME" --output ./openapi-swagger.yaml
       fi
-    - if [ "${MOCK_SERVER}" != "" ]; then
-        touch MOCK.yaml;
-        yq 'with(.paths; with_entries(.key |=strenv(NAME) + .))' ./openapi-swagger.yaml >> MOCK.yaml;
-        cat MOCK.yaml | python -c 'import sys, yaml, json; print(json.dumps(yaml.safe_load(sys.stdin.read()), indent=2, sort_keys=False))' > MOCK.json;
-        curl --max-time 30 -v -X PUT "${MOCK_SERVER}/mockserver/openapi$([ ! -z "$API_KEY" ] && echo "?apikey=${{ secrets.API_KEY }}")" -d "{\"specUrlOrPayload\": $(cat $PWD/MOCK.json)}";
-        echo "Adding mockserver address to spec";
-        yq ".servers += [{\"url\": \"${MOCK_SERVER}$([[ ! "${MOCK_SERVER}" == */ ]] && echo "/")${NAME}\"}]" -i ./openapi-swagger.yaml;
+    - |
+      if [[ -n "$MOCK_SERVER" ]]; then
+        NAME=$(echo $CI_PROJECT_PATH | awk -F / '{print $2}')
+        touch MOCK.yaml
+        yq 'with(.paths; with_entries(.key |=strenv(NAME) + .))' ./openapi-swagger.yaml >> MOCK.yaml
+        cat MOCK.yaml | python3 -c 'import sys, yaml, json; print(json.dumps(yaml.safe_load(sys.stdin.read()), indent=2, sort_keys=False))' > MOCK.json
+        curl --max-time 30 -v -X PUT "${MOCK_SERVER}/mockserver/openapi$([ ! -z "$API_KEY" ] && echo "?apikey=$API_KEY")" -d "{\"specUrlOrPayload\": \"$(cat $PWD/MOCK.json)\"}"
+        echo "Adding mockserver address to spec"
+        yq '.servers += [{"url": $MOCK_SERVER + ($MOCK_SERVER | endswith(\"/\") | not | ifthenelse(\"/\") + \"\") + $NAME} ]' -i ./openapi-swagger.yaml
       fi
-    - mkdir -p api/;
-      echo $NAME;
-      touch "api/$NAME.yaml";
-      sed -i "s|\"|'|g" ./openapi-swagger.yaml;
-      yq eval ".apiVersion = \"backstage.io/v1alpha1\"" -i "api/$NAME.yaml";
-      yq eval ".kind = \"API\" " -i "api/$NAME.yaml";
-      yq eval ".metadata.name=strenv(NAME)" -i "api/$NAME.yaml";
-      yq eval ".metadata.description= \"$(cat ./openapi-swagger.yaml | yq e '.info.description')\"" -i "api/$NAME.yaml";
-      yq eval ".metadata.tags = (strenv(TAGS) | sub(\" +\", \"\") | split(\",\"))" -i "api/$NAME.yaml";
-      yq eval ".spec.type = \"openapi\"" -i "api/$NAME.yaml";
-      yq eval ".spec.lifecycle = \"production\"" -i "api/$NAME.yaml";
-      yq eval ".spec.owner = \"consumer\"" -i "api/$NAME.yaml";
-      yq eval ".spec.definition = \"$(yq -I4 ./openapi-swagger.yaml)\"" --inplace "api/$NAME.yaml";
-
-publish_to_spec_house:
-  stage: publish_spechouse
+  
+build-devportal-spec:
+  stage: build_and_publish_spec
   variables:
-    BRANCH: $CI_COMMIT_REF_NAME
-    USER_NAME: $GITLAB_USER_NAME
+    NAME: ""
+    TAGS: "${{values.specTags}}"
   before_script:
-    - apt-get update && apt-get install -y curl
+    - apt-get update && apt-get install -y wget curl git
+    - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    - chmod a+x /usr/local/bin/yq
+    - yq --version
   script:
-    - curl -o api $CI_SERVER_URL/${{ values.specPublish }}/raw/${{ values.branchName }}/api
-    - git config --global user.name "$USER_NAME"
-    - git add api
+    - mkdir -p api/
+    - export NAME=$(echo $CI_PROJECT_PATH | awk -F / '{print $2}')
+    - echo $NAME
+    - touch "api/$NAME.yaml"
+    - sed -i "s|\"|'|g" ./openapi-swagger.yaml
+    - yq eval ".apiVersion = \"backstage.io/v1alpha1\"" -i "api/$NAME.yaml"
+    - yq eval ".kind = \"API\" " -i "api/$NAME.yaml"
+    - yq eval ".metadata.name=\"$NAME\"" -i "api/$NAME.yaml"
+    - yq eval ".metadata.description= \"$(cat ./openapi-swagger.yaml | yq e '.info.description')\"" -i "api/$NAME.yaml"
+    - yq eval ".metadata.tags = (\"$TAGS\" | split(\",\") | map(sub(\" +\", \"\")))" -i "api/$NAME.yaml"
+    - yq eval ".spec.type = \"openapi\"" -i "api/$NAME.yaml"
+    - yq eval ".spec.lifecycle = \"production\"" -i "api/$NAME.yaml"
+    - yq eval ".spec.owner = \"consumer\"" -i "api/$NAME.yaml"
+    - yq eval ".spec.definition = \"$(yq -I4 e '.')\"" -i "api/$NAME.yaml"
+    - git config --global user.name "$CI_REGISTRY_USER"
+    - git config --global user.email "$GITLAB_USER_EMAIL"
+    - git clone -b ${{ values.branchName }} https://oauth2:$API_TOKEN_GITLAB@gitlab.com/${{ values.specPublish }}.git #check
+    - cp -f ./api/$NAME.yaml ./spechouse/api
+    - cd spechouse
+    - git add .
     - git commit -m "Pipeline commit"
-    - git push
+    - git push  origin ${{ values.branchName }}
+
+
+{%- if values.observability_window == "custom" %}
+publish_dashboard_grafana:
+ stage: publish_dashboard_grafana
+ variables:
+   GRAFANA_URL: "${{ values.observability_grafana }}"
+   UID_TRACE_DASHBOARD: ""
+   UID_LOG_DASHBOARD: ""
+   UID_METRICS_DASHBOARD: ""
+ script:
+    - apt-get update -qy
+    - apt-get install -y curl jq
+    - |
+      export GRAFANA_API_TOKEN=$GRAFANA_API_TOKEN
+      export CHECKED_URL=${GRAFANA_URL%/}
+      export UID_TRACE_DASHBOARD=$(curl -H "Authorization: Bearer $GRAFANA_API_TOKEN" --url $CHECKED_URL/api/datasources | jq '.[] | select(.type == "jaeger")'.uid)
+      echo "UID_TRACE = $UID_TRACE_DASHBOARD"
+      export UID_LOG_DASHBOARD=$(curl -H "Authorization: Bearer $GRAFANA_API_TOKEN" --url $CHECKED_URL/api/datasources | jq '.[] | select(.type == "loki")'.uid)
+      echo "UID_LOG = $UID_LOG_DASHBOARD"
+      export UID_METRICS_DASHBOARD=$(curl -H "Authorization: Bearer $GRAFANA_API_TOKEN" --url $CHECKED_URL/api/datasources | jq '.[] | select(.type == "prometheus")'.uid)
+      echo "UID_METRICS = $UID_METRICS_DASHBOARD"
+      jq '(.dashboard.panels[].datasource | select(.type == "jaeger")).uid |= env.UID_TRACE_DASHBOARD' "dashboards/jaeger-trace.json" > $CI_PROJECT_PATH-jaeger-trace.json
+      cat $CI_PROJECT_PATH-jaeger-trace.json
+      jq '(.dashboard.panels[].datasource | select(.type == "loki")).uid |= env.UID_LOG_DASHBOARD' "dashboards/loki-logs.json" > $CI_PROJECT_PATH-loki-logs.json
+      cat $CI_PROJECT_PATH-loki-logs.json
+      jq '(.dashboard.panels[].datasource | select(.type == "prometheus")).uid |= env.UID_METRICS_DASHBOARD' "dashboards/kong-metrics.json" > $CI_PROJECT_PATH-kong-metrics.json
+      cat $CI_PROJECT_PATH-kong-metrics.json
+      curl -X POST -d @$CI_PROJECT_PATH-jaeger-trace.json \
+      -H "Accept: application/json" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $GRAFANA_API_TOKEN" \
+      --url $CHECKED_URL/api/dashboards/db
+      curl -X POST -d @$CI_PROJECT_PATH-kong-metrics.json \
+      -H "Accept: application/json" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $GRAFANA_API_TOKEN" \
+      --url $CHECKED_URL/api/dashboards/db
+      curl -X POST -d @$CI_PROJECT_PATH-loki-logs.json \
+      -H "Accept: application/json" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $GRAFANA_API_TOKEN" \
+      --url $CHECKED_URL/api/dashboards/db
+ {%- endif %}
