@@ -189,7 +189,7 @@ spec:
                       title: Insert a Grafana URL
                       type: string
 
-    - title: Spec House Configuration
+    - title: Spec Configuration
       required:
         - specPublish
         - specPublishBranch
@@ -213,6 +213,28 @@ spec:
           description: Write using camelCase or separate words using "-"
           items:
             type: string
+        plugins:
+          title: Choose plugins for your Project
+          type: object
+          properties:
+            kubernetes:
+              title: Kubernetes
+              type: boolean
+              default: true
+            vault:
+              title: Vault
+              type: boolean
+              default: true
+            grafana:
+              title: Grafana
+              type: boolean
+              default: true
+            plugin_argocd:
+              title: ArgoCD
+              type: boolean
+              default: true
+          
+          
 
     - title: Choose a location
       required:
@@ -256,6 +278,10 @@ spec:
           specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
           specTags: ${{ parameters.specTags }}
+          enable_kubernetes_plugin: ${{ parameters.plugins.kubernetes }}
+          enable_vault_plugin: ${{ parameters.plugins.vault }}
+          enable_grafana_plugin: ${{ parameters.plugins.grafana }}
+          enable_argocd_plugin: ${{ parameters.plugins.argocd }}
           observability_window: ${{ parameters.observability_window.observability_window_mode }}
           observability_grafana: ${{ parameters.observability_window.observability_grafana }} 
           owner: ${{ parameters.owner }}
