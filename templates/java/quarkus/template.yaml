@@ -133,8 +133,13 @@ spec:
     - title: CI/CD Configurations
       required:
         - argoRepoUrl
+        - argoRepoBranch
       description: ArgoCD repository configuration
       properties:
+        argoRepoBranch:
+          title: Branch name
+          type: string
+          description: Default branch of argo repository
         argoRepoUrl:
           type: string
           ui:field: RepoUrlPicker
@@ -187,13 +192,13 @@ spec:
     - title: Spec House Configuration
       required:
         - specPublish
-        - branchName
+        - specPublishBranch
       description: Spec House Configuration
       properties:
-        branchName:
+        specPublishBranch:
           title: Branch name
           type: string
-          description: Name of the branch  
+          description: Default branch of spechouse repository
         specPublish:
           type: string
           ui:field: RepoUrlPicker
@@ -202,6 +207,12 @@ spec:
               - github.com
               - gitlab.com
               - bitbucket.org
+        specTags:
+          type: array
+          title: Set the tags for your spec
+          description: Write using camelCase or separate words using "-"
+          items:
+            type: string
 
     - title: Choose a location
       required:
@@ -229,23 +240,29 @@ spec:
           artifact: ${{ parameters.artifact }}
           javaVersion: ${{ parameters.javaVersion }}
           applicationPort: ${{ parameters.applicationPort }}
-          owner: ${{ parameters.owner }}
-          argoRepoUrl: ${{ (parameters.argoRepoUrl | parseRepoUrl).owner }}/${{ (parameters.argoRepoUrl | parseRepoUrl).repo }}
-          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
-          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          branchName: ${{ parameters.branchName }}
-          host : ${{ (parameters.repoUrl | parseRepoUrl).host }}
-          exportKongKubernetes: ${{ parameters.exportKongKubernetes }}
-          mockserverUrl: ${{ parameters.mockserverUrl }}    
-          docker_window: ${{ parameters.docker_window.docker_window_mode }}
-          docker_organization: ${{ parameters.docker_window.docker_organization }}
-          docker_generic: ${{ parameters.docker_window.docker_generic }} 
-          observability_window: ${{ parameters.observability_window.observability_window_mode }}
-          observability_grafana: ${{ parameters.observability_window.observability_grafana }} 
           database_window: ${{ parameters.database_window.database_window_mode }}
           database: ${{ parameters.database_window.database }}
           dbUsername: ${{ parameters.database_window.dbUsername }}
-          dbPassword: ${{ parameters.database_window.dbPassword }}    
+          dbPassword: ${{ parameters.database_window.dbPassword }}]
+          docker_window: ${{ parameters.docker_window.docker_window_mode }}
+          docker_organization: ${{ parameters.docker_window.docker_organization }}
+          docker_generic: ${{ parameters.docker_window.docker_generic }} 
+          argoRepoUrl: ${{ (parameters.argoRepoUrl | parseRepoUrl).owner }}/${{ (parameters.argoRepoUrl | parseRepoUrl).repo }}
+          argoRepo: ${{ (parameters.argoRepoUrl | parseRepoUrl).repo }}
+          argoRepoBranch: ${{ parameters.argoRepoBranch }}
+          exportKongKubernetes: ${{ parameters.exportKongKubernetes }} 
+          mockserverUrl: ${{ parameters.mockserverUrl }}   
+          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishBranch: ${{ parameters.specPublishBranch }}
+          specTags: ${{ parameters.specTags }}
+          observability_window: ${{ parameters.observability_window.observability_window_mode }}
+          observability_grafana: ${{ parameters.observability_window.observability_grafana }} 
+          owner: ${{ parameters.owner }}
+          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          host : ${{ (parameters.repoUrl | parseRepoUrl).host }}
+         
+  
 
     - name: Check Observability
       if: ${{ parameters.observability_window.observability_window_mode === 'default' }}

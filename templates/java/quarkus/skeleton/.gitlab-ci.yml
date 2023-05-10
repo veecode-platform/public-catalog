@@ -69,14 +69,14 @@ publish_k8s:
     - kubectl create ingress spring-sample-app --class=kong --namespace=vkpr --annotation "cert-manager.io/cluster-issuer"="certmanager-issuer" --annotation "konghq.com/https-redirect-status-code"="308" --annotation "kubernetes.io/tls-acme"="true" --annotation "konghq.com/strip-path"="true" --annotation "konghq.com/preserve-host"="true" --annotation "konghq.com/protocols"="https" --rule="rest.platform.vee.codes/spring-sample-app*=spring-sample-app:8080,tls=rest.platform.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
     - yq e 'del(.metadata.creationTimestamp) | del(.status)' -i ./k8s/ingress.yaml
     - yq e '.metadata.labels."backstage.io/kubernetes-id"="spring-sample-app"' -i ./k8s/ingress.yaml
-    - git clone https://oauth2:$API_TOKEN_GITLAB@gitlab.com/$CI_REGISTRY_USER/${{ values.argoRepoUrl }}.git
-    - cp -r k8s ${{ values.argoRepoUrl }}/${{ values.componentId }}
-    - cd ${{ values.argoRepoUrl }} #check
+    - git clone -b ${{ values.argoRepoBranch }} https://oauth2:$API_TOKEN_GITLAB@gitlab.com/${{ values.argoRepoUrl }}.git
+    - cp -r k8s ${{ values.argoRepo }}/${{ values.componentId }}
+    - cd ${{ values.argoRepo }}
     - git config --global user.email "$GITLAB_USER_EMAIL"
     - git config --global user.name "$CI_REGISTRY_USER"
     - git add .
     - git commit -m "Add Kubernetes files"
-    - git push origin main # check
+    - git push origin ${{ values.argoRepoBranch }}
     
 {%- if values.kongExport %}    
 export_kong_kubernetes:
@@ -133,7 +133,7 @@ build-devportal-spec:
   stage: build_and_publish_spec
   variables:
     NAME: ""
-    TAGS: "${{values.specTags}}"
+    TAGS: "{% for specTag in values.specTags | string | list %}${{ specTag }}{% endfor %}"
   before_script:
     - apt-get update && apt-get install -y wget curl git
     - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
@@ -156,12 +156,12 @@ build-devportal-spec:
     - yq eval ".spec.definition = \"$(yq -I4 e '.')\"" -i "api/$NAME.yaml"
     - git config --global user.name "$CI_REGISTRY_USER"
     - git config --global user.email "$GITLAB_USER_EMAIL"
-    - git clone -b ${{ values.branchName }} https://oauth2:$API_TOKEN_GITLAB@gitlab.com/${{ values.specPublish }}.git #check
-    - cp -f ./api/$NAME.yaml ./spechouse/api
-    - cd spechouse
+    - git clone -b ${{ values.specPublishBranch }} https://oauth2:$API_TOKEN_GITLAB@gitlab.com/${{ values.specPublish }}.git 
+    - cp -f ./api/$NAME.yaml ./${{ values.specPublishRepo }}/api
+    - cd ${{ values.specPublishRepo }}
     - git add .
     - git commit -m "Pipeline commit"
-    - git push  origin ${{ values.branchName }}
+    - git push  origin ${{ values.specPublishBranch }}
 
 
 {%- if values.observability_window == "custom" %}
