@@ -70,7 +70,7 @@ publish_k8s:
     - git config --global user.email "$GITLAB_USER_EMAIL"
     - git config --global user.name "$CI_REGISTRY_USER"
     - git add .
-    - git commit -m "Add Kubernetes files"
+    - git commit -m "Add Kubernetes files" --allow-empty
     - git push origin ${{ values.argoRepoBranch }}
     
 {%- if values.kongExport %}    
@@ -120,12 +120,11 @@ publish-spec:
         touch MOCK.yaml
         yq 'with(.paths; with_entries(.key |=strenv(NAME) + .))' ./openapi-swagger.yaml >> MOCK.yaml
         cat MOCK.yaml | python3 -c 'import sys, yaml, json; print(json.dumps(yaml.safe_load(sys.stdin.read()), indent=2, sort_keys=False))' > MOCK.json
-        curl --max-time 30 -v -X PUT "$MOCK_SERVER/mockserver/openapi${API_KEY:+?apikey=$API_KEY}" -d "{\"specUrlOrPayload\": $(cat $PWD/MOCK.json)}" || true;
+        curl --max-time 30 -v -X PUT "${MOCK_SERVER%/}/mockserver/openapi${API_KEY:+?apikey=$API_KEY}" -d "{\"specUrlOrPayload\": $(cat $PWD/MOCK.json)}" || true;
         echo "Adding mockserver address to spec";
         yq ".servers += [{\"url\": \"$MOCK_SERVER $([[ ! "$MOCK_SERVER" == */ ]] && echo "/")${NAME}\"}]" -i ./openapi-swagger.yaml
         fi
     - echo "Spechouse Publish"
-    - ls
     - mkdir -p api/
     - export NAME=$(echo $CI_PROJECT_PATH | awk -F / '{print $2}')
     - echo $NAME
@@ -146,7 +145,7 @@ publish-spec:
     - cp -f ./api/$NAME.yaml ./${{ values.specPublishRepo }}/api
     - cd ${{ values.specPublishRepo }}
     - git add .
-    - git commit -m "Pipeline commit"
+    - git commit -m "Pipeline commit" --allow-empty
     - git push  origin ${{ values.specPublishBranch }}
     
 
