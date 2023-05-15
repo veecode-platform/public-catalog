@@ -126,7 +126,7 @@ jobs:
         env:
           NAME: ""
           PATH_API: ""
-          TAGS: "{% for specTag in values.specTags | string | list %}${{ specTag }}{% endfor %}"
+          TAGS: {% if values.specTags == "custom" %}"{% for tag in values.tags | string | list %}${{ tag }}{% endfor %}"{% else %}""{% endif %}
         run: |
           mkdir -p api/
           NAME=`echo $GITHUB_REPOSITORY |awk -F / '{print $2 }'`

@@ -208,11 +208,37 @@ spec:
               - gitlab.com
               - bitbucket.org
         specTags:
-          type: array
-          title: Set the tags for your spec
-          description: Write using camelCase or separate words using "-"
-          items:
-            type: string
+          title: Tags
+          type: object
+          properties:
+            tags:
+              title: Want to set tags for your spec?
+              type: string
+              enum:
+              - default
+              - custom
+              enumNames:
+              - 'No'
+              - 'Yes'
+              default: default
+          dependencies:
+            tags:
+                oneOf:
+                - properties:
+                   tags:
+                     enum:
+                        - default          
+                - properties:
+                    tags:
+                      enum:
+                        - custom
+                    project_tags:
+                      title: Insert a Tag
+                      type: array
+                      ui:help: Write using camelCase or separate words using "-"
+                      items:
+                        type: string         
+                            
         plugins:
           title: Choose plugins for your Project
           type: object
@@ -277,7 +303,8 @@ spec:
           specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
           specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
-          specTags: ${{ parameters.specTags }}
+          specTags: ${{ parameters.specTags.tags }}
+          tags: ${{ parameters.specTags.project_tags }}
           enable_kubernetes_plugin: ${{ parameters.plugins.kubernetes }}
           enable_vault_plugin: ${{ parameters.plugins.vault }}
           enable_grafana_plugin: ${{ parameters.plugins.grafana }}
