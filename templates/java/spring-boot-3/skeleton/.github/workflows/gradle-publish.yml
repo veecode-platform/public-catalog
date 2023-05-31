@@ -103,8 +103,8 @@ jobs:
           use_rsync: true
           source_file: 'k8s/'
           destination_repo: ${{ values.argoRepoUrl }}
-          destination_folder: '/${{values.componentId}}/'
-          destination_branch: 'master'
+          destination_folder: '/${{ values.componentId }}/'
+          destination_branch: '${{ values.argoRepoBranch }}'
           user_email: 'veecode-bot@vee.codes'
           user_name: 'veecode-bot'
           commit_message: 'A custom message for the commit'
@@ -177,7 +177,7 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{'${{'}} secrets.API_TOKEN_GITHUB ${{'}}'}}
         with:
-          destination_branch: ${{ values.branchName }}
+          destination_branch: ${{ values.specPublishBranch }}
           source_file:  'api'
           destination_repo: ${{ values.specPublish }}
           destination_folder: '/'

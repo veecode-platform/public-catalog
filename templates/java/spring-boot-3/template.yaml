@@ -133,14 +133,21 @@ spec:
     - title: CI/CD Configurations
       required:
         - argoRepoUrl
+        - argoRepoBranch
       description: ArgoCD repository configuration
       properties:
+        argoRepoBranch:
+            title: Branch name
+            type: string
+            description: Default branch of argo repository
         argoRepoUrl:
           type: string
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
               - github.com
+              - gitlab.com
+              - bitbucket.org
         exportKongKubernetes:
           title: Export Kong for Kubernetes
           type: boolean
@@ -182,16 +189,16 @@ spec:
                       title: Insert a Grafana URL
                       type: string
 
-    - title: Spec House Configuration
+    - title: Spec Configuration
       required:
         - specPublish
-        - branchName
+        - specPublishBranch
       description: Spec House Configuration
       properties:
-        branchName:
-          title: Branch name
-          type: string
-          description: Name of the branch
+        specPublishBranch:
+                  title: Branch name
+                  type: string
+                  description: Default branch of spechouse repository
         specTags:
           title: Tags
           type: string
@@ -202,6 +209,8 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+              - gitlab.com
+              - bitbucket.org
 
     - title: Choose a location
       required:
@@ -214,6 +223,8 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+              - gitlab.com
+              - bitbucket.org
   steps:
     - id: template
       name: Fetch Skeleton + Template
@@ -228,23 +239,26 @@ spec:
           artifact: ${{ parameters.artifact }}
           javaVersion: ${{ parameters.javaVersion }}
           applicationPort: ${{ parameters.applicationPort }}
-          owner: ${{ parameters.owner }}
-          argoRepoUrl: ${{ (parameters.argoRepoUrl | parseRepoUrl).owner }}/${{ (parameters.argoRepoUrl | parseRepoUrl).repo }}
-          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
-          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          branchName: ${{ parameters.branchName }}
-          specTags: ${{ parameters.specTags }}
-          exportKongKubernetes: ${{ parameters.exportKongKubernetes }}
-          mockserverUrl: ${{ parameters.mockserverUrl }}
-          docker_window: ${{ parameters.docker_window.docker_window_mode }}
-          docker_organization: ${{ parameters.docker_window.docker_organization }}
-          docker_generic: ${{ parameters.docker_window.docker_generic }}
-          observability_window: ${{ parameters.observability_window.observability_window_mode }}
-          observability_grafana: ${{ parameters.observability_window.observability_grafana }}
           database_window: ${{ parameters.database_window.database_window_mode }}
           database: ${{ parameters.database_window.database }}
           dbUsername: ${{ parameters.database_window.dbUsername }}
           dbPassword: ${{ parameters.database_window.dbPassword }}
+          docker_window: ${{ parameters.docker_window.docker_window_mode }}
+          docker_organization: ${{ parameters.docker_window.docker_organization }}
+          docker_generic: ${{ parameters.docker_window.docker_generic }}
+          argoRepoUrl: ${{ (parameters.argoRepoUrl | parseRepoUrl).owner }}/${{ (parameters.argoRepoUrl | parseRepoUrl).repo }}
+          argoRepo: ${{ (parameters.argoRepoUrl | parseRepoUrl).repo }}
+          argoRepoBranch: ${{ parameters.argoRepoBranch }}
+          mockserverUrl: ${{ parameters.mockserverUrl }}  
+          exportKongKubernetes: ${{ parameters.exportKongKubernetes }}
+          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishBranch: ${{ parameters.specPublishBranch }}
+          specTags: ${{ parameters.specTags }}
+          observability_window: ${{ parameters.observability_window.observability_window_mode }}
+          observability_grafana: ${{ parameters.observability_window.observability_grafana }}
+          owner: ${{ parameters.owner }}
+          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
 
     - name: Check Observability
       if: ${{ parameters.observability_window.observability_window_mode === 'default' }}
@@ -253,8 +267,36 @@ spec:
         files: 
           - ./.github/workflows/application_dashboards.yml
           - ./dashboards
+
+    # check github
+    - name: Check Github Provider
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === "github.com" }} 
+      action: fs:delete
+      input:
+        files: 
+          - ./.gitlab-ci.yml 
+          - ./bitbucket-pipelines.yml
+    # check gitlab
+    - name: Check Gitlab Provider
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === "gitlab.com" }} 
+      action: fs:delete
+      input:
+        files:
+          - ./.github
+          - ./bitbucket-pipelines.yml
+    # check bitbucket      
+    - name: Check Bitbucket Provider
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === "bitbucket.org" }} 
+      action: fs:delete
+      input:
+        files:
+          - ./.github
+          - ./.gitlab-ci.yml 
+
+
     - id: publish
-      name: Publish
+      name: Publish in Github
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }} 
       action: publish:github
       input:
         allowedHosts:
@@ -262,12 +304,35 @@ spec:
         description: This is ${{ parameters.componentId }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: private
+      
+    - id: publish
+      name: Publish in Gitlab
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "gitlab.com" }}
+      action: publish:gitlab
+      input:
+        allowedHosts:
+          - gitlab.com
+        description: This is ${{ parameters.componentId }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: private    
+    
+    - id: publish
+      name: Publish in Bitbucket
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "bitbucket.org" }} 
+      action: publish:bitbucketCloud
+      input:
+        allowedHosts:
+          - bitbucket.org
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+
     - id: register
       name: Register
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
+        
   output:
     links:
       - title: Repository
