@@ -1,5 +1,8 @@
 image: node:16
 
+variables:
+  AWS_DEFAULT_REGION: ${{ values.region }}
+
 stages:
   - deploy
   - manual_start
