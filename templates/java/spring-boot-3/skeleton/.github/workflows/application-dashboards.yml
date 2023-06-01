@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - "master"
-    paths:
-    - dashboards
 
 jobs:
   Adding_Dashboards:
