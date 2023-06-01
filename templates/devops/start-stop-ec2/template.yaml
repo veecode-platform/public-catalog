@@ -2,7 +2,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: start-stop-ec2
-  title: AWS Lambda with Serverless Template
+  title: Start & Stop EC2 Template
   description: Using lambda with the help of serverless, to optimize the use of EC2 infrastructure.
   annotations:
     backstage.io/techdocs-ref: dir:.
@@ -27,6 +27,7 @@ spec:
           type: string
           description: Unique name of the component
           ui:field: EntityNamePicker
+          ui:autofocus: true
         description:
           title: Description
           type: string
@@ -39,55 +40,26 @@ spec:
           ui:options:
             catalogFilter:
               kind: [Group, User]
+              
     # project
-    - title: Serverless Configuration
-      #required:
-      properties:
-        framework_version: 
-          title: Define the AWS framework version
-          type: number
-          default: 3
-        region:  
-          title: Bucket Region
-          type: string
-          description: Specifies the Bucket region
-          default: 'us-east-1'
-          enum:
-            - 'us-east-2'
-            - 'us-east-1'
-            - 'us-west-1'
-            - 'us-west-2'
-          enumNames:
-            - 'US East (Ohio)'
-            - 'US East (N. Virginia)'
-            - 'US West (N. California)'
-            - 'US West (Oregon)'
-        runtime:
-          title: 'Select the node version'
-          type: string
-          description: Choose the node version
-          enum:
-            - '12'
-            - '14'
-            - '16'
-            - '18'
-          enumNames:
-            - 'Nodejs 12'
-            - 'Nodejs 14'
-            - 'Nodejs 16'
-            - 'Nodejs 18' 
-          default: '16'
-        memory_size:
-          title: 'Define Memory Size'
-          type: number
-          default: 128
-        timeout:
-          title: 'Define Timeout'
-          type: number
-          default: 10
 
-    - title: Define Stage
+    - title: Project Settings
       properties:
+        region:  
+             title: Lambda Region
+             type: string
+             description: Specifies the Lambda region
+             default: 'us-east-1'
+             enum:
+               - 'us-east-2'
+               - 'us-east-1'
+               - 'us-west-1'
+               - 'us-west-2'
+             enumNames:
+               - 'US East (Ohio)'
+               - 'US East (N. Virginia)'
+               - 'US West (N. California)'
+               - 'US West (Oregon)'
         stage:
           title: 'Define the stage of the project'
           type: string
@@ -150,54 +122,14 @@ spec:
           maxLength: 5
           default: '00 12'
           ui:help: 'MM HH format (Use space between the minutes and hours)'
-        start_day_init:
-          title: Day of the Week to init the Start function
-          type: string
-          default: MON
-          enum:
-          - SUN
-          - MON
-          - TUE
-          - WED
-          - THU
-          - FRI
-          - SAT
-          enumNames:
-          - 'Sunday'
-          - 'Monday'
-          - 'Tuesday'
-          - 'Wednesday'
-          - 'Thursday'
-          - 'Friday'
-          - 'Saturday'
-        start_day_end:
-          title: Day of the Week to end the Start function
-          type: string
-          default: FRI
-          enum:
-          - SUN
-          - MON
-          - TUE
-          - WED
-          - THU
-          - FRI
-          - SAT
-          enumNames:
-          - 'Sunday'
-          - 'Monday'
-          - 'Tuesday'
-          - 'Wednesday'
-          - 'Thursday'
-          - 'Friday'
-          - 'Saturday'
         stop_time:
           title: Stop Time (UTC)
           type: string
           maxLength: 5
           default: '00 22'
           ui:help: 'MM HH format (Use space between the minutes and hours)'
-        stop_day_init:
-          title: Day of the Week to init the Stop function
+        schedule_init:
+          title: Day of the Week to init the schedule
           type: string
           default: MON
           enum:
@@ -216,8 +148,8 @@ spec:
           - 'Thursday'
           - 'Friday'
           - 'Saturday'
-        stop_day_end:
-          title: Day of the Week to end the Stop function
+        schedule_stop:
+          title: Day of the Week to stop the schedule
           type: string
           default: FRI
           enum:
@@ -249,6 +181,17 @@ spec:
             allowedHosts:
               - github.com
               - gitlab.com
+        visibility:
+          title: Private Repository
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
+
   steps:
     - id: template
       name: Fetch Skeleton + Template
@@ -259,22 +202,16 @@ spec:
          componentId: ${{ parameters.componentId }}
          description: ${{ parameters.description }}
          owner: ${{ parameters.owner }}
-         framework_version: ${{ parameters.framework_version }}
          region: ${{ parameters.region }}
-         runtime: ${{ parameters.runtime }}
-         memory_size: ${{ parameters.memory_size }}
-         timeout: ${{ parameters.timeout }}
          stage: ${{ parameters.stage }}
          default_branch : ${{ parameters.default_branch }}
          bucket: ${{ parameters.bucket.bucket_options }}
          bucket_name: ${{ parameters.bucket.bucket_name }}
          instance_ids: ${{ parameters.instance_ids }}
          start_time: ${{ parameters.start_time }}
-         start_day_init: ${{ parameters.start_day_init }}
-         start_day_end: ${{ parameters.start_day_end }}
          stop_time: ${{ parameters.stop_time }}
-         stop_day_init: ${{ parameters.stop_day_init }}
-         stop_day_end: ${{ parameters.stop_day_end }}
+         schedule_init: ${{ parameters.schedule_init }}
+         schedule_stop: ${{ parameters.schedule_stop }}
          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}      
          host:  ${{ (parameters.repoUrl | parseRepoUrl).host }}
 
@@ -323,6 +260,7 @@ spec:
         description: This is ${{ parameters.componentId }}
         repoUrl: ${{ parameters.repoUrl }}
         defaultBranch: ${{ parameters.default_branch }}
+        repoVisibility: ${{ parameters.visibility }}
 
     - id: publish
       name: Publish in gitlab
@@ -333,6 +271,7 @@ spec:
         description: This is ${{ parameters.componentId }}
         repoUrl: ${{ parameters.repoUrl }}
         defaultBranch: ${{ parameters.default_branch }}
+        repoVisibility: ${{ parameters.visibility }}
     
     - id: register
       name: Register

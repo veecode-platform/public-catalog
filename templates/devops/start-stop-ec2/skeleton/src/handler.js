@@ -24,14 +24,3 @@ exports.stop = (event, context, callback) => {
     ec2.stopInstances({ InstanceIds: INSTANCE_IDS }).promise()
         .then(() => callback(null, `Server has been stopped ${INSTANCE_IDS}`))
 }
-
-exports.destroy = (event, context, callback) => {
-    const ec2 = new AWS.EC2({ region: event.region });
-
-    ec2.terminateInstances({ InstanceIds: INSTANCE_IDS }).promise()
-        .then(() => callback(null, `Server has been destroyed ${INSTANCE_IDS}`))
-        .catch(err => {
-            console.error('Problems destroying server', err);
-            callback(err);
-        });
-};

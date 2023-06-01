@@ -1,10 +1,10 @@
-name: Start Lambda
+name: Remove Lambda
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
-  starting:
+  upload:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -12,6 +12,12 @@ jobs:
         with:
           node-version: 16.x
           cache: npm
+      
+      - name: Install dependencies
+        run: | 
+           npm version
+           npm i
+           npm install -g serverless
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -20,6 +26,6 @@ jobs:
           aws-secret-access-key: ${{'${{'}} secrets.AWS_SECRET_ACCESS_KEY ${{'}}'}}
           aws-region: ${{ values.region }}
 
-      - name: Lambda Invoke
+      - name: Remove Project
         run: | 
-           aws lambda invoke --function-name ${{ values.componentId }}-start test.log
+           sls remove --stage ${{values.stage}}

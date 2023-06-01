@@ -1,13 +1,13 @@
 service: ${{ values.componentId }}
-frameworkVersion: "${{ values.framework_version }}"
+frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: nodejs${{ values.runtime }}.x
+  runtime: nodejs16.x
   stage: ${{ values.stage }}
   region: ${{ values.region }}
-  memorySize: ${{ values.memory_size }}
-  timeout: ${{ values.timeout }}
+  memorySize: 128
+  timeout: 10
   {%- if values.bucket == 'custom' %}
   deploymentBucket:
     name: ${file(./config/config.${{ values.stage }}.yaml):deploymentBucket}
@@ -33,12 +33,9 @@ functions:
     handler: src/handler.start
     name: ${{ values.componentId }}-start
     events:
-      - schedule: cron(${{ values.start_time }} ? * ${{ values.start_day_init }}-${{ values.start_day_end }} *) 
+      - schedule: cron(${{ values.start_time }} ? * ${{ values.schedule_init }}-${{ values.schedule_stop }} *) 
   stop:
     handler: src/handler.stop
     name: ${{ values.componentId }}-stop
     events:
-      - schedule: cron(${{ values.stop_time }} ? * ${{ values.stop_day_init }}-${{ values.stop_day_end }} *)
-  destroy:
-    handler: src/handler.destroy
-    name: ${{ values.componentId }}-destroy
+      - schedule: cron(${{ values.stop_time }} ? * ${{ values.schedule_init }}-${{ values.schedule_stop }} *)
