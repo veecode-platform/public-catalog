@@ -4,6 +4,7 @@ stages:
   - deploy
   - manual_start
   - manual_stop
+  - manual_destroy
 
 deploy_to_aws:
   stage: deploy
@@ -29,3 +30,10 @@ stopping:
   when: manual
   script:
     - aws lambda invoke --function-name ${{ values.componentId }}-stop test.log
+
+destroying:
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  stage: manual_destroy
+  when: manual
+  script:
+    - aws lambda invoke --function-name ${{ values.componentId }}-destroy test.log

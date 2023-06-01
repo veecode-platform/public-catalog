@@ -9,11 +9,11 @@ exports.start =  (event, context, callback) => {
 
     ec2.startInstances({ InstanceIds: INSTANCE_IDS }).promise()
         .then(() => {
-            console.log(`Servidor foi iniciado ${INSTANCE_IDS}`);
+            console.log(`Server has been started ${INSTANCE_IDS}`);
             callback(null, 'OK');
         })
         .catch(err => {
-            console.error('Problemas ao iniciar servidor', err);
+            console.error('Problems starting the service', err);
             callback(err);
         });
 };
@@ -22,5 +22,16 @@ exports.stop = (event, context, callback) => {
     const ec2 = new AWS.EC2({ region: event.region });
 
     ec2.stopInstances({ InstanceIds: INSTANCE_IDS }).promise()
-        .then(() => callback(null, `Servidor foi parado ${INSTANCE_IDS}`))
+        .then(() => callback(null, `Server has been stopped ${INSTANCE_IDS}`))
 }
+
+exports.destroy = (event, context, callback) => {
+    const ec2 = new AWS.EC2({ region: event.region });
+
+    ec2.terminateInstances({ InstanceIds: INSTANCE_IDS }).promise()
+        .then(() => callback(null, `Server has been destroyed ${INSTANCE_IDS}`))
+        .catch(err => {
+            console.error('Problems destroying server', err);
+            callback(err);
+        });
+};
