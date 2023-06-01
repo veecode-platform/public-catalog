@@ -122,6 +122,16 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+        visibility:
+          title: Repository visibility
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
 
   steps:
     - id: template
@@ -156,6 +166,7 @@ spec:
           - github.com
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: ${{ parameters.visibility }}
     
     - id: register
       name: Register

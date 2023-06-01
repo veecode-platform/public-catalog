@@ -267,7 +267,7 @@ spec:
         - repoUrl
       properties:
         repoUrl:
-          title: Repository Location
+          title: Repository visibility
           type: string
           ui:field: RepoUrlPicker
           ui:options:
@@ -275,6 +275,16 @@ spec:
               - github.com
               - gitlab.com
               - bitbucket.org
+        visibility:
+          title: Private Repository
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
 
   steps:
     - id: template
@@ -359,7 +369,7 @@ spec:
           - github.com
         description: This is ${{ parameters.componentId }}
         repoUrl: ${{ parameters.repoUrl }}
-        repoVisibility: private
+        repoVisibility: ${{ parameters.visibility }}
       
     - id: publish
       name: Publish in Gitlab
@@ -370,7 +380,7 @@ spec:
           - gitlab.com
         description: This is ${{ parameters.componentId }}
         repoUrl: ${{ parameters.repoUrl }}
-        repoVisibility: private    
+        repoVisibility: ${{ parameters.visibility }}   
     
     - id: publish
       name: Publish in Bitbucket
@@ -381,6 +391,7 @@ spec:
           - bitbucket.org
         description: This is ${{ parameters.name }}
         repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: ${{ parameters.visibility }}
 
     - id: register
       name: Register

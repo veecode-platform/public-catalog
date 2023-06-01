@@ -44,6 +44,16 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+        visibility:
+          title: Repository visibility
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
 
     - title: Mock Server Configuration
       properties:
@@ -80,7 +90,8 @@ spec:
           - github.com
         description: This is ${{ parameters.componentId }}
         repoUrl: ${{ parameters.repoUrl }}
-        repoVisibility: private
+        repoVisibility: ${{ parameters.visibility }}
+
     - id: register
       name: Register
       action: catalog:register
