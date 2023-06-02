@@ -43,6 +43,7 @@ jobs:
       - name: Creating K8s Artifacts
         run: |
           mkdir k8s/
+          mkdir config/
           kubectl create deployment ${{values.componentId}} --namespace=vkpr --port=${{ values.applicationPort }} --replicas=1 \
           {%- if values.docker_window == 'custom' %}
           --image=${{ values.docker_generic }}/${{ values.docker_organization }}/${{values.componentId}}:latest --dry-run=client -o=yaml > ./k8s/deployment.yaml
@@ -82,6 +83,19 @@ jobs:
           --rule="rest.platform.vee.codes/${{values.componentId}}*=${{values.componentId}}-service-0:${{ values.applicationPort }},tls=rest.platform.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
           yq e 'del(.metadata.creationTimestamp) | del(.status)' -i ./k8s/ingress.yaml
           yq e '.metadata.labels."backstage.io/kubernetes-id"="${{values.componentId}}"' -i ./k8s/ingress.yaml
+
+          yq e '''
+              .apiVersion="argoproj.io/v1alpha1" |
+              .kind="Application" |
+              .metadata.name="${{values.componentId}}" |
+              .metadata.namespace="argocd" |
+              .spec.project="default" |
+              .spec.source.repoURL="https://github.com/${{ values.argoRepoUrl }}.git" |
+              .spec.source.targetRevision="HEAD" |
+              .spec.source.path="${{values.componentId}}/" |
+              .spec.syncPolicy.automated.prune=true |
+              .spec.destination.server="https://kubernetes.default.svc" |
+              .spec.destination.namespace="vkpr"''' -i config/${{values.componentId}}.yaml
       
       {%- if values.exportKongKubernetes %}
 
@@ -107,7 +121,21 @@ jobs:
           destination_branch: '${{ values.argoRepoBranch }}'
           user_email: 'veecode-bot@vee.codes'
           user_name: 'veecode-bot'
-          commit_message: 'A custom message for the commit'
+          commit_message: 'Moving k8s ${{ values.componentId }} artefacts'
+      
+      - name: Publish ArgoCD Application config
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{'${{'}} secrets.API_TOKEN_GITHUB ${{'}}'}}
+        with:
+          use_rsync: true
+          source_file: 'config/'
+          destination_repo: ${{ values.argoRepoUrl }}
+          destination_folder: '/config/'
+          destination_branch: '${{ values.argoRepoBranch }}'
+          user_email: 'veecode-bot@vee.codes'
+          user_name: 'veecode-bot'
+          commit_message: 'Configuring ${{ values.componentId }} argocd application'
 
   publish-spec:
     runs-on: ubuntu-latest

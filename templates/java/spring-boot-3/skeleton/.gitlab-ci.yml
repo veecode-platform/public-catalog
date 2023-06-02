@@ -50,6 +50,7 @@ create_K8s_artifacts:
     - mv kubectl /usr/local/bin/
     - kubectl version --client
     - mkdir -p ./k8s
+    - mkdir -p ./config/
     - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
     - chmod a+x /usr/local/bin/yq
     - yq --version
@@ -85,6 +86,18 @@ create_K8s_artifacts:
           --annotation "sidecar.opentelemetry.io/inject"="true" \
           --annotation "instrumentation.opentelemetry.io/inject-java"="true" \
           --rule="rest.platform.vee.codes/$PROJECT_NAME*=$PROJECT_NAME-service-0:${{ values.applicationPort }},tls=rest.platform.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
+    - yq e '''
+        .apiVersion="argoproj.io/v1alpha1" |
+        .kind="Application" |
+        .metadata.name="${{values.componentId}}" |
+        .metadata.namespace="argocd" |
+        .spec.project="default" |
+        .spec.source.repoURL="https://github.com/${{ values.argoRepoUrl }}.git" |
+        .spec.source.targetRevision="HEAD" |
+        .spec.source.path="${{values.componentId}}/" |
+        .spec.syncPolicy.automated.prune=true |
+        .spec.destination.server="https://kubernetes.default.svc" |
+        .spec.destination.namespace="vkpr"''' -i config/${{values.componentId}}.yaml          
 
 
 {%- if values.kongExport %}    
