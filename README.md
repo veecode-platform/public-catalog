@@ -39,13 +39,20 @@
    <a href="http://www.youtube.com/watch?feature=player_embedded&v=2KX8fFaoIAk" target="_blank">
   <img src="http://img.youtube.com/vi/2KX8fFaoIAk/0.jpg" alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
+   
    With public-catalog you can find ready-made templates for:
    
-   **Devops** such as eks, insomnia, openapi, rds, ec2, static-site
+  **Devops** 
+      
+      Such as EKS, Insomnia, OpenApi, RDS, EC2, Static-Site
 
-   **Java** such as quarkus & spring-boot-3
+  **Java** 
+      
+      Such as Quarkus & Spring-boot-3
 
-   **NextJS** such as a project skeleton
+   **NextJS** 
+      
+      Such as a project skeleton
 
    
 ### Components
