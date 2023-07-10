@@ -36,7 +36,7 @@ contents: "openapi: 3.0.0
 
   servers:
 
-  \  - url: https://rest.platform.vee.codes/${{values.componentId}}
+  \  - url: https://rest.apr.vee.codes/${{values.componentId}}
   
   tags:
 

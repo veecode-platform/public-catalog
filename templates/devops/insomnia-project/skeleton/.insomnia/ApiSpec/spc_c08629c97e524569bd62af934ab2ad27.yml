@@ -10,10 +10,10 @@ contents: >
   info:
     description: "This is a sample API spec for Safira CLI demonstration.
       You can find out more about Safira CLI at 
-      [https://docs.platform.vee.codes/](https://docs.platform.vee.codes/)."
+      [https://docs.apr.vee.codes/](https://docs.apr.vee.codes/)."
     version: 1.0.0
     title: Safira CLI Sample API
-    termsOfService: https://platform.vee.codes/terms-of-service/
+    termsOfService: https://apr.vee.codes/terms-of-service/
     contact:
       email: platform-sales@vee.codes
     license:

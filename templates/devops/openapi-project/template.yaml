@@ -60,7 +60,7 @@ spec:
         mockserverUrl:
           title: Mockserver URL
           type: string
-          description: 'Insert your mockerser host. ex.: https://mockserver.platform.vee.codes'
+          description: 'Insert your mockerser host. ex.: https://mockserver.apr.vee.codes'
           default: ''
           
   steps:

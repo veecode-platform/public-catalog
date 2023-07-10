@@ -28,9 +28,9 @@ pipelines:
                 -Dquarkus.kubernetes.namespace=vkpr \
                 -Dquarkus.kubernetes.ingress.expose=true \
                 -Dquarkus.kubernetes.ingress.ingress-class-name=kong \
-                -Dquarkus.kubernetes.ingress.host=rest.platform.vee.codes \
-                -Dquarkus.kubernetes.ingress.tls."rest.platform.vee.codes-tls".enabled=true \
-                -Dquarkus.kubernetes.ingress.tls."rest.platform.vee.codes-tls".hosts=rest.platform.vee.codes \
+                -Dquarkus.kubernetes.ingress.host=rest.apr.vee.codes \
+                -Dquarkus.kubernetes.ingress.tls."rest.apr.vee.codes-tls".enabled=true \
+                -Dquarkus.kubernetes.ingress.tls."rest.apr.vee.codes-tls".hosts=rest.apr.vee.codes \
                 -Dquarkus.kubernetes.ingress.annotations."backstage.io/kubernetes-id"=spring-sample-app \
                 -Dquarkus.kubernetes.ingress.annotations."cert-manager.io/cluster-issuer"=certmanager-issuer \
                 -Dquarkus.kubernetes.ingress.annotations."konghq.com/https-redirect-status-code"=308 \

@@ -86,7 +86,7 @@ create_K8s_artifacts:
           --annotation "konghq.com/protocols"="https" \
           --annotation "sidecar.opentelemetry.io/inject"="true" \
           --annotation "instrumentation.opentelemetry.io/inject-java"="true" \
-          --rule="rest.platform.vee.codes/$PROJECT_NAME*=$PROJECT_NAME-service-0:${{ values.applicationPort }},tls=rest.platform.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
+          --rule="rest.apr.vee.codes/$PROJECT_NAME*=$PROJECT_NAME-service-0:${{ values.applicationPort }},tls=rest.apr.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
     - yq e '''
         .apiVersion="argoproj.io/v1alpha1" |
         .kind="Application" |
@@ -137,7 +137,7 @@ publish_k8s:
 #    - yq e '.metadata.labels."backstage.io/kubernetes-id"="$PROJECT_NAME" | .spec.template.metadata.labels."backstage.io/kubernetes-id"="$PROJECT_NAME" | .spec.template.spec.containers[0].imagePullPolicy="IfNotPresent" | .spec.template.spec.containers[0].resources.requests.memory="256Mi" | .spec.template.spec.containers[0].resources.limits.memory="512Mi" | del(.status) | del(.metadata.creationTimestamp) | del(.spec.template.metadata.creationTimestamp) | del(.spec.strategy)' -i ./k8s/deployment.yaml
 #    - kubectl create service clusterip $PROJECT_NAME --namespace=vkpr --tcp=${{ values.applicationPort }}:${{ values.applicationPort }} --dry-run=client -o=yaml > ./k8s/service.yaml
 #    - yq e 'del(.metadata.creationTimestamp) | del(.status) | .metadata.labels."backstage.io/kubernetes-id"="$PROJECT_NAME"' -i ./k8s/service.yaml
-#    - kubectl create ingress $PROJECT_NAME --class=kong --namespace=vkpr --annotation "cert-manager.io/cluster-issuer"="certmanager-issuer" --annotation "konghq.com/https-redirect-status-code"="308" --annotation "kubernetes.io/tls-acme"="true" --annotation "konghq.com/strip-path"="true" --annotation "konghq.com/preserve-host"="true" --annotation "konghq.com/protocols"="https" --rule="rest.platform.vee.codes/$PROJECT_NAME*=$PROJECT_NAME:${{ values.applicationPort }},tls=rest.platform.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
+#    - kubectl create ingress $PROJECT_NAME --class=kong --namespace=vkpr --annotation "cert-manager.io/cluster-issuer"="certmanager-issuer" --annotation "konghq.com/https-redirect-status-code"="308" --annotation "kubernetes.io/tls-acme"="true" --annotation "konghq.com/strip-path"="true" --annotation "konghq.com/preserve-host"="true" --annotation "konghq.com/protocols"="https" --rule="rest.apr.vee.codes/$PROJECT_NAME*=$PROJECT_NAME:${{ values.applicationPort }},tls=rest.apr.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
 #    - yq e 'del(.metadata.creationTimestamp) | del(.status)' -i ./k8s/ingress.yaml
 #    - yq e '.metadata.labels."backstage.io/kubernetes-id"="$PROJECT_NAME"' -i ./k8s/ingress.yaml
     - git clone -b ${{ values.argoRepoBranch }} https://oauth2:$API_TOKEN_GITLAB@gitlab.com/${{ values.argoRepoUrl }}.git
