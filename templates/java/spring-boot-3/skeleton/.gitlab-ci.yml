@@ -193,7 +193,9 @@ publish-spec:
     - sed --in-place "s|\"|'|g" ./openapi-swagger.yaml
     - yq eval ".apiVersion = \"backstage.io/v1alpha1\"" -i "api/$NAME.yaml"
     - yq eval ".kind = \"API\" " -i "api/$NAME.yaml"
-    - yq eval ".metadata.name=\"$NAME\"" -i "api/$NAME.yaml"   
+    - yq eval ".metadata.name=\"$NAME\"" -i "api/$NAME.yaml"
+    - yq eval ".metadata.title=\"$NAME\"" -i "api/$NAME.yaml"
+    - yq eval ".metadata.publishedAt=\"$(date '+%Y-%m-%d %T')\"" -i "api/$NAME.yaml"
     - yq eval ".metadata.description= \"$(cat ./openapi-swagger.yaml | yq e '.info.description')\"" -i "api/$NAME.yaml"
     - yq eval ".metadata.tags = (\"$TAGS\" | split(\",\") | map(sub(\" +\", \"\")))" -i "api/$NAME.yaml"
     - yq eval ".spec.type = \"openapi\"" -i "api/$NAME.yaml"

@@ -194,6 +194,8 @@ jobs:
           yq eval ".apiVersion = \"backstage.io/v1alpha1\"" -i "api/$NAME.yaml"
           yq eval ".kind = \"API\" " -i "api/$NAME.yaml"
           yq eval ".metadata.name=strenv(NAME)" -i "api/$NAME.yaml"
+          yq eval ".metadata.title=strenv(NAME)" -i "api/$NAME.yaml"
+          yq eval ".metadata.publishedAt=\"$(date '+%Y-%m-%d %T')\"" -i "api/$NAME.yaml"
           yq eval ".metadata.description= \"$(cat ./openapi-swagger.yaml | yq e '.info.description')\"" -i "api/$NAME.yaml"
           yq eval ".metadata.tags = (strenv(TAGS) | sub(\" +\", \"\") | split(\",\"))" -i "api/$NAME.yaml"
           yq eval ".spec.type = \"openapi\"" -i "api/$NAME.yaml"
