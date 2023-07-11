@@ -92,7 +92,7 @@ jobs:
               .metadata.namespace="argocd" |
               .spec.project="default" |
               .spec.source.repoURL="https://github.com/${{ values.argoRepoUrl }}.git" |
-              .spec.source.targetRevision="HEAD" |
+              .spec.source.targetRevision="${{ values.argoRepoBranch }}" |
               .spec.source.path="${{values.componentId}}/" |
               .spec.syncPolicy.automated.prune=true |
               .spec.destination.server="https://kubernetes.default.svc" |
