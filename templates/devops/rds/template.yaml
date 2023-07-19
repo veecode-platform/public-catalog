@@ -21,11 +21,20 @@ spec:
         - password
         - instance_name
         - instance_type
+        - owner
       properties:
         instance_name:
           title: RDS Instance Name
           type: string
           description: Specifies the RDS Instance Name
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
         instance_type:
           title: RDS Instance Type
           type: string
@@ -98,7 +107,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the RDS Pipeline
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com

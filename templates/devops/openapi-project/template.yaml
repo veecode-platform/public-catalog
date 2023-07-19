@@ -28,7 +28,7 @@ spec:
           description: Inputs tags separated by comma(,)
         specPublish:
           type: string
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com
@@ -36,11 +36,20 @@ spec:
     - title: Choose a location
       required:
         - repoUrl
+        - owner
       properties:
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group      
         repoUrl:
           title: Repository Location
           type: string
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com

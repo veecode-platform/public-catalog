@@ -22,11 +22,20 @@ spec:
         - instance_type
         - node_quantity
         - max_node_quantity
+        - owner
       properties:
         eks_cluster_name:
           title: EKS Cluster name
           type: string
           description: Specifies the EKS Cluster name
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
         k8s_version:
           title: Kubernetes Version
           type: string
@@ -118,7 +127,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the EKS Cluster Pipeline
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com

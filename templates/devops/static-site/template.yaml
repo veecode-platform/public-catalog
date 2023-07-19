@@ -19,11 +19,20 @@ spec:
       required:
         - name
         - domain
+        - owner
       properties:
         name:
           title: Site name
           type: string
           description: Specifies the site name
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
         domain:
           title: Domain site name
           type: string
@@ -76,7 +85,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the EKS Cluster Pipeline
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com

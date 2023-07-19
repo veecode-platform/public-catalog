@@ -17,7 +17,7 @@ metadata:
 spec:
   type: openapi
   lifecycle: experimental
-  owner: admin
+  owner: ${{values.owner | dump}}
 
 
 

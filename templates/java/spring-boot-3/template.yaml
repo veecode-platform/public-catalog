@@ -17,6 +17,7 @@ spec:
     - title: Project Configuration
       required:
         - componentId
+        - owner
       properties:
         componentId:
           title: Project name
@@ -24,6 +25,14 @@ spec:
           description: Name of the project
           ui:autofocus: true
           ui:field: EntityNamePicker
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
         description:
           title: Description
           type: string
@@ -142,7 +151,7 @@ spec:
             description: Default branch of argo repository
         argoRepoUrl:
           type: string
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com
@@ -205,7 +214,7 @@ spec:
           description: Inputs tags separated by comma(,)
         specPublish:
           type: string
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com
@@ -219,7 +228,7 @@ spec:
         repoUrl:
           title: Repository Location
           type: string
-          ui:field: RepoUrlPicker
+          ui:field: RepoUrlPlatform
           ui:options:
             allowedHosts:
               - github.com

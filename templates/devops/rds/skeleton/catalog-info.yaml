@@ -11,4 +11,4 @@ metadata:
 spec:
   type: devops
   lifecycle: experimental
-  owner: platform
+  owner: ${{values.owner | dump}}
