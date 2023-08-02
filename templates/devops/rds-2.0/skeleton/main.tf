@@ -1,4 +1,5 @@
 module "banco_rds" {
+  source  = "./banco_rds"
 #create aws db subnet group
   name_db_subnet_group        = local.name_db_subnet_group
   description_db_subnet_group = local.description_db_subnet_group
