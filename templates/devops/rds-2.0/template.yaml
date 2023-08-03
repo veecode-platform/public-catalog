@@ -42,6 +42,7 @@ spec:
       required:
         - structure_automation
         - subnet
+        - subnet_ids
         - engine_version
       properties:
         structure_automation: 
