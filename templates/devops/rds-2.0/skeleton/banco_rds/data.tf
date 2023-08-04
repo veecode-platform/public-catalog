@@ -1,10 +1,10 @@
 #Retrieve  vpc
-data "aws_vpc" "vpc_rds" {
-   filter {
-    name   = "tag:Application"
-    values = ["${var.name_suffix}"]
-  }
-}
+#data "aws_vpc" "vpc_rds" {
+#   filter {
+#    name   = "tag:Application"
+#    values = ["${var.name_suffix}"]
+#  }
+#}
 
 /*#Retrieve public subnet
 data "aws_subnets" "subnet-public" {
