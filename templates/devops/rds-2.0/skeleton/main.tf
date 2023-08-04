@@ -30,7 +30,7 @@ module "banco_rds" {
   performance_insights_retention_period = local.config.performance_insights_retention_period
   deletion_protection                   = local.config.deletion_protection 
   storage_encrypted                     = local.config.storage_encrypted
-  resource_tags                         = local.config.resource_tags
+  resource_tags                         = local.config.tags
   name_suffix                           = local.config.name_suffix
   
 }
