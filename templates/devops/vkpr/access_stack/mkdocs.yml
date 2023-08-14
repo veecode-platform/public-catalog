@@ -1,0 +1,8 @@
+site_name: Access Stack Template
+site_description: Access Template using External-DNS, Cert-Manager and Nginx Ingress Controller
+
+nav:
+  - Introduction: index.md
+
+plugins:
+  - techdocs-core
