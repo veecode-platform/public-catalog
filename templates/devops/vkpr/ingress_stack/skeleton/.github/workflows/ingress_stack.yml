@@ -1,0 +1,48 @@
+name: Install Ingress Stack
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Install_Ingress_Stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{'${{'}} secrets.AWS_ACCESS_KEY${{'}}'}}
+          aws-secret-access-key: ${{'${{'}} secrets.AWS_SECRET_KEY${{'}}'}}
+          aws-region: ${{'${{'}} secrets.AWS_REGION ${{'}}'}}
+
+      - name: Install Vkpr
+        shell: bash
+        run: |
+          curl -fsSL https://get.vkpr.net/ | CONTROL_SKIP="true" bash
+
+      ### Configure VKPR Credentials
+      - name: config vkpr credentials
+        shell: bash
+        run: |
+            shopt -s expand_aliases
+            alias vkpr="rit vkpr"
+            vkpr credential set --provider="aws" \
+                --fields="accesskeyid,region,secretaccesskey" \
+                --values="${{'${{'}} secrets.AWS_ACCESS_KEY${{'}}'}},${{'${{'}} secrets.AWS_REGION ${{'}}'}},${{'${{'}} secrets.AWS_SECRET_KEY${{'}}'}}" 
+
+      ### Provisionamento (External DNS, Cert-Manager, Nginx Ingress Controller)
+      - name: Vkpr apply
+        run: |
+          shopt -s expand_aliases
+          alias vkpr="rit vkpr"
+          aws eks update-kubeconfig --name ${{'${{'}} secrets.CLUSTER_NAME ${{'}}'}} --region ${{'${{'}} secrets.AWS_REGION ${{'}}'}}
+          vkpr cert-manager install aws --aws_hostedzone_id=${{'${{'}} secrets.AWS_HOSTEDZONE_ID${{'}}'}}
+          vkpr apply --path_to_file="$(pwd)/vkpr.yaml"
+          kubectl delete pod/"$(kubectl get pod -A | grep external-dns | awk -F' ' '{print $2}')" -n vkpr
+
+      - name: Save kubeconfig file as artefact
+        uses: actions/upload-artifact@v2
+        with:
+          name: kubeconfig
+          path: $HOME/.kube/config

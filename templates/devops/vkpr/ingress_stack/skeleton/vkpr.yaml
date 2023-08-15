@@ -1,0 +1,14 @@
+global:
+  domain: ${{ values.domain }} #placeholder
+  ingressClassName: nginx
+  secure: true
+  provider: aws
+cert-manager:
+  email: ${{ values.email }} #placeholder
+  issuer:
+    type: "production"
+    solver: "DNS01"
+external-dns:
+  enabled: true
+ingress:
+  enabled: true

@@ -1,0 +1,8 @@
+site_name: Ingress Stack Template
+site_description: Ingress Template using External-DNS, Cert-Manager and Nginx Ingress Controller
+
+nav:
+  - Introduction: index.md
+
+plugins:
+  - techdocs-core
