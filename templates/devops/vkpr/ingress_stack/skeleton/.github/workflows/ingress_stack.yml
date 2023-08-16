@@ -41,8 +41,8 @@ jobs:
           vkpr apply --path_to_file="$(pwd)/vkpr.yaml"
           kubectl delete pod/"$(kubectl get pod -A | grep external-dns | awk -F' ' '{print $2}')" -n vkpr
 
-      - name: Save kubeconfig file as artefact
+      - name: Upload kubeconfig file as artefact
         uses: actions/upload-artifact@v2
         with:
           name: kubeconfig
-          path: $HOME/.kube/config
+          path: ~/.kube/config
