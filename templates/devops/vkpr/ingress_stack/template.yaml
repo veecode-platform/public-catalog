@@ -94,7 +94,7 @@ spec:
           specPublishBranch: ${{ parameters.specPublishBranch }}
           specTags: ${{ parameters.specTags }}
           owner: ${{ parameters.owner }}
-          repoUrl: ${{ parameters.repoUrl }}
+          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
 
     # check github
