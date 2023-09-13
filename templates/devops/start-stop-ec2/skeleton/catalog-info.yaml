@@ -8,9 +8,12 @@ metadata:
   annotations:
     ${{ values.host }}/project-slug: ${{ values.repoUrl }}
     backstage.io/techdocs-ref: dir:.
-    # vault.io/secrets-path: devportal
-    # grafana/tag-selector: "grafanacloud"
-    # grafana/alert-label-selector: "alertname=teste-aviso"
+    {%- if values.host.includes("github")%}
+    github.com/workflows: aws_start_manual.yml,aws_stop_manual.yml,aws_remove_manual.yml
+    {%- endif %}
+    {%- if values.host.includes("gitlab")%}
+    gitlab.com/jobs: Start:START_JOB,Stop:STOP_JOB,Remove:REMOVE_JOB
+    {%- endif %}
 spec:
   type: service
   lifecycle: experimental
