@@ -1,8 +1,5 @@
 image: node:16
 
-variables:
-  AWS_DEFAULT_REGION: ${{ values.region }}
-
 stages:
   - deploy
   - start
@@ -10,10 +7,11 @@ stages:
   - remove
 
 variables:
-  DEFAULT_JOB: false
-  START_JOB: false
-  STOP_JOB: false
-  REMOVE_JOB: false
+  AWS_DEFAULT_REGION: ${{ values.region }}
+  DEFAULT_JOB: 'false'
+  START_JOB: 'false'
+  STOP_JOB: 'false'
+  REMOVE_JOB: 'false'
 
 deploy_to_aws:
   stage: deploy
