@@ -1,5 +1,5 @@
 include:
-  - remote: https://gitlab.com/vkpr/templates/-/raw/1.3.5/ingress-stack-template-aws.gitlab-ci.yml?ref_type=tags
+  - remote: https://gitlab.com/vkpr/templates/-/raw/1.3.5/observability-ci.yaml?ref_type=tags
 
 cache:
   key: $CI_PIPELINE_ID
@@ -11,18 +11,16 @@ variables:
   AWS_SECRET_KEY: "$AWS_SECRET_KEY"
   AWS_REGION: "$AWS_REGION"
   CLUSTER: "$CLUSTER_NAME"
-  AWS_HOSTEDZONE_ID: "$AWS_HOSTEDZONE_ID"
-
 
 stages:
-  - Install_Ingress_Stack
+  - Install_Observability
 
 provisionament:
-    stage: Install_Ingress_Stack
+    stage: Install_Observability
     extends: .provisionament
 
 kubeconfig-download:
-    stage: Install_Ingress_Stack
+    stage: Install_Observability
     extends: .kubeconfig-download
     needs:
     - provisionament

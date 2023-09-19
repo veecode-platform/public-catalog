@@ -1,0 +1,8 @@
+global:
+  domain: ${{ values.domain }}
+  secure: true
+  provider: aws
+kong: 
+  enabled: true
+  basic_auth: ${{ values.basic_auth }}
+  mode: ${{ values.kong_mode }}

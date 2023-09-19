@@ -1,0 +1,36 @@
+global:
+  domain: ${{ values.domain }}
+  ingressClassName: ${{ values.ingress_class }}
+  secure: true
+  provider: aws
+
+# OBSERVABILITY
+prometheus-stack:
+  enabled: true    
+  metrics: true
+  alertManager:
+    enabled: true
+    persistence:
+      enabled: true
+      size: 5Gi
+  grafana:
+    persistence:
+      enabled: true
+      size: 5Gi
+  helmArgs:
+    prometheus:
+      prometheusSpec:
+        scrapeInterval: 10s
+  prometheus:
+    persistence:
+      enabled: true
+      size: 5Gi
+loki:
+  enabled: true    
+  metrics: true
+jaeger:
+  enabled: true    
+  metrics: true
+otel:
+  enabled: true    
+  metrics: true

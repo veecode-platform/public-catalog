@@ -14,5 +14,7 @@ spec:
     - ./devops/openapi-project/template.yaml
     - ./devops/start-stop-ec2/template.yaml
     - ./devops/vkpr/ingress_stack/template.yaml
+    - ./devops/vkpr/kong/template.yaml
+    - ./devops/vkpr/observability_stack/template.yaml
     - ./java/spring-boot-3/template.yaml
     - ./java/quarkus/template.yaml
