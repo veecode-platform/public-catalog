@@ -1,8 +1,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: observability
-  title: observability
+  name: Observability
+  title: Observability
   description: Observability Stack Template
   annotations:
     backstage.io/techdocs-ref: dir:.
