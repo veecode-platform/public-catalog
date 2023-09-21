@@ -40,12 +40,12 @@ spec:
           title: Kubernetes Version
           type: string
           description: Specifies the EKS Kubernetes Version
-          default: "1.27"
+          default: "1.23"
           enum:
-            - "1.27"
-            - "1.26"
-            - "1.25"
-            - "1.24"
+            - "1.23"
+            - "1.22"
+            - "1.21"
+            - "1.20"
         instance_type:
           title: Node instance type
           type: string
@@ -129,6 +129,8 @@ spec:
           description: Choose a location to create the EKS Cluster Pipeline
           ui:field: RepoUrlPlatform
           ui:options:
+            allowedHosts:
+              - github.com
         visibility:
           title: Repository visibility
           type: string
@@ -157,8 +159,6 @@ spec:
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           owner: ${{ parameters.owner }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
-          host:  ${{ (parameters.repoUrl | parseRepoUrl).host }}
-          infracost: ${{ parameters.infracost }}
     
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
@@ -166,39 +166,13 @@ spec:
       input:
         files: 
           - ./.github/workflows/infracost.yml
-          
-    - name: Check Github Provider
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("github") }} 
-      action: fs:delete
-      input:
-        files:
-          - ./.gitlab-ci.yml
-
-    - name: Check Gitlab Provider
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("gitlab") }}  
-      action: fs:delete
-      input:
-        files:
-          - ./.github
 
     - id: publish
-      name: Publish in Github
-      if: ${{ (parameters.repoUrl | parseRepoUrl).includes("github") }}
+      name: Publish
       action: publish:github
       input:
         allowedHosts:
-          - ${{ values.host }}
-        description: EKS Cluster ${{ parameters.eks_cluster_name }}
-        repoUrl: ${{ parameters.repoUrl }}
-        repoVisibility: ${{ parameters.visibility }}
-
-    - id: publish
-      name: Publish in Gitlab
-      if: ${{ (parameters.repoUrl | parseRepoUrl).includes("gitlab") }}
-      action: publish:github
-      input:
-        allowedHosts:
-          - ${{ values.host }}
+          - github.com
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
@@ -209,7 +183,6 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
-        
   output:
     links:
       - title: Repository
