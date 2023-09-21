@@ -6,7 +6,12 @@ metadata:
   description: ${{values.description | dump}}
   {%- endif %}
   annotations:
-    ${{ values.host }}/project-slug: ${{ values.repoUrl }}
+    {%- if values.host.includes("github") %}
+    github.com/project-slug: ${{ values.repoUrl }}
+    {%- endif %}
+    {%- if values.host.includes("gitlab") %}
+    gitlab.com/project-slug: ${{ values.repoUrl }}
+    {%- endif %}
     backstage.io/techdocs-ref: dir:.
     {%- if values.host.includes("github")%}
     github.com/workflows: terraform-deploy.yml,terraform-destroy.yml{% if values.infracost%},infracost.yml{% endif %}

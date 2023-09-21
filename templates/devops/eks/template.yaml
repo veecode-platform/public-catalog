@@ -168,14 +168,14 @@ spec:
           - ./.github/workflows/infracost.yml
           
     - name: Check Github Provider
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host === "github.com" }} 
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("github") }} 
       action: fs:delete
       input:
         files:
           - ./.gitlab-ci.yml
 
     - name: Check Gitlab Provider
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host === "gitlab.com" }} 
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("gitlab") }}  
       action: fs:delete
       input:
         files:
@@ -187,7 +187,7 @@ spec:
       action: publish:github
       input:
         allowedHosts:
-          - github.com
+          - ${{ values.host }}
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
@@ -198,7 +198,7 @@ spec:
       action: publish:github
       input:
         allowedHosts:
-          - gitlab.com
+          - ${{ values.host }}
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
