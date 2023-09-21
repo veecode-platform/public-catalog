@@ -183,7 +183,7 @@ spec:
 
     - id: publish
       name: Publish in Github
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }}
+      if: ${{ (parameters.repoUrl | parseRepoUrl).includes("github") }}
       action: publish:github
       input:
         allowedHosts:
@@ -194,7 +194,7 @@ spec:
 
     - id: publish
       name: Publish in Gitlab
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "gitlab.com" }}
+      if: ${{ (parameters.repoUrl | parseRepoUrl).includes("gitlab") }}
       action: publish:github
       input:
         allowedHosts:
