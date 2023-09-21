@@ -170,12 +170,37 @@ spec:
         files: 
           - ./.github/workflows/infracost.yml
 
+    - name: Check Github Provider
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("github") }} 
+      action: fs:delete
+      input:
+        files:
+          - ./.gitlab-ci.yml
+
+    - name: Check Gitlab Provider
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("gitlab") }} 
+      action: fs:delete
+      input:
+        files:
+          - ./.github
+    
+
     - id: publish
-      name: Publish
+      name: Publish in github
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host.include("github") }} 
       action: publish:github
       input:
-        allowedHosts:
-          - github.com
+        allowedHosts: ${{ (parameters.repoUrl | parseRepoUrl).host }}
+        description: EKS Cluster ${{ parameters.eks_cluster_name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: ${{ parameters.visibility }}
+
+    - id: publish
+      name: Publish in gitlab
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host.include("gitlab") }} 
+      action: publish:gitlab
+      input:
+        allowedHosts: ${{ (parameters.repoUrl | parseRepoUrl).host }}
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
@@ -186,6 +211,7 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
+        
   output:
     links:
       - title: Repository
