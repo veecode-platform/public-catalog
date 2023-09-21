@@ -40,12 +40,12 @@ spec:
           title: Kubernetes Version
           type: string
           description: Specifies the EKS Kubernetes Version
-          default: "1.23"
+          default: "1.27"
           enum:
-            - "1.23"
-            - "1.22"
-            - "1.21"
-            - "1.20"
+            - "1.27"
+            - "1.26"
+            - "1.25"
+            - "1.24"
         instance_type:
           title: Node instance type
           type: string
@@ -209,6 +209,7 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
+        
   output:
     links:
       - title: Repository
