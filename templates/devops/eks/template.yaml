@@ -171,14 +171,14 @@ spec:
           - ./.github/workflows/infracost.yml
 
     - name: Check Github Provider
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("github") }} 
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }} 
       action: fs:delete
       input:
         files:
           - ./.gitlab-ci.yml
 
     - name: Check Gitlab Provider
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host.includes("gitlab") }} 
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host === "gitlab.com" }} 
       action: fs:delete
       input:
         files:
@@ -187,20 +187,20 @@ spec:
 
     - id: publish
       name: Publish in github
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host.include("github") }} 
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }}  
       action: publish:github
       input:
-        allowedHosts: ${{ (parameters.repoUrl | parseRepoUrl).host }}
+        allowedHosts: ["github.com"]
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
 
     - id: publish
       name: Publish in gitlab
-      if: ${{ (parameters.repoUrl | parseRepoUrl).host.include("gitlab") }} 
+      if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "gitlab.com"  }} 
       action: publish:gitlab
       input:
-        allowedHosts: ${{ (parameters.repoUrl | parseRepoUrl).host }}
+        allowedHosts: ["gitlab.com"]
         description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
