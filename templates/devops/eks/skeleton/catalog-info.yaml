@@ -6,8 +6,11 @@ metadata:
   description: ${{values.description | dump}}
   {%- endif %}
   annotations:
-    github.com/project-slug: ${{values.destination}}
+    ${{ values.host }}/project-slug: ${{ values.repoUrl }}
     backstage.io/techdocs-ref: dir:.
+    {%- if values.host.includes("github")%}
+    github.com/workflows: {% if values.infracost%}infracost.yml,{% endif %}terraform-deploy.yml,terraform-destroy.yml
+    {%- endif %}
 spec:
   type: devops
   lifecycle: experimental

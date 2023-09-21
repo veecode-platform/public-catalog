@@ -159,6 +159,8 @@ spec:
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           owner: ${{ parameters.owner }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
+          host:  ${{ (parameters.repoUrl | parseRepoUrl).host }}
+          infracost: ${{ parameters.infracost }}
     
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
