@@ -6,7 +6,12 @@ metadata:
   description: ${{values.description | dump}}
   {%- endif %}
   annotations:
-    ${{ values.host }}/project-slug: ${{ values.repoUrl }}
+    {%- if values.host.includes("github") %}
+    github.com/project-slug: ${{ values.repoUrl }}
+    {%- endif %}
+    {%- if values.host.includes("gitlab") %}
+    gitlab.com/project-slug: ${{ values.repoUrl }}
+    {%- endif %}
     backstage.io/techdocs-ref: dir:.
     {%- if values.host.includes("github")%}
     github.com/workflows: aws_start_manual.yml,aws_stop_manual.yml,aws_remove_manual.yml

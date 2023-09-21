@@ -161,6 +161,7 @@ spec:
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           infracost: ${{ parameters.infracost }}
+          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
     
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
