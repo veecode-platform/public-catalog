@@ -128,9 +128,6 @@ spec:
           type: string
           description: Choose a location to create the EKS Cluster Pipeline
           ui:field: RepoUrlPlatform
-          ui:options:
-            allowedHosts:
-              - github.com
         visibility:
           title: Repository visibility
           type: string
