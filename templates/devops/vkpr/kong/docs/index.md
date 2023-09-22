@@ -30,7 +30,7 @@ For the project to run as expected, it is necessary to configure some secrets in
 :key: CLUSTER_NAME `mandatory` <br>
 
 ### Database Mode standart
-:key: POSTGRES_PASS `mandatory` <br>
+:key: POSTGRES_PASSWORD `mandatory` <br>
 
 ### Kong Free Mode com basic auth
 :key: KONG_ADMIN_PASSWORD `mandatory` <br>

@@ -2,8 +2,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: kong_ingress
-  title: Kong
-  description: Kong Ingress Controller Template
+  title: Kong Ingress Controller Template
+  description: Configure a Kong API Gateway installation
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:

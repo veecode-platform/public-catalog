@@ -2,8 +2,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: Observability
-  title: Observability
-  description: Observability Stack Template
+  title: Observability Stack Template
+  description: Configures the installation of the observability stack containing Grafana, Prometheus, Jaeger and OpenTelemetry
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:
