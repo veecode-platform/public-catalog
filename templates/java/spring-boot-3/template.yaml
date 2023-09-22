@@ -279,6 +279,7 @@ spec:
           observability_grafana: ${{ parameters.observability_window.observability_grafana }}
           owner: ${{ parameters.owner }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
 
     - name: Check Observability
       if: ${{ parameters.observability_window.observability_window_mode === 'default' }}
@@ -296,6 +297,7 @@ spec:
         files: 
           - ./.gitlab-ci.yml 
           - ./bitbucket-pipelines.yml
+
     # check gitlab
     - name: Check Gitlab Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host === "gitlab.com" }} 
@@ -304,6 +306,7 @@ spec:
         files:
           - ./.github
           - ./bitbucket-pipelines.yml
+
     # check bitbucket      
     - name: Check Bitbucket Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host === "bitbucket.org" }} 

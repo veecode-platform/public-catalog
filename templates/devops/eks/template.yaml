@@ -1,9 +1,9 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: terraform-eks-template-github
-  title: Provision EKS Cluster - Github
-  description: Provision EKS Cluster using Terraform and Github Actions
+  name: terraform-eks-template
+  title: Provision EKS Cluster
+  description: Provision EKS Cluster using Terraform
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:
