@@ -6,12 +6,7 @@ metadata:
   description: ${{values.description | dump}}
   {%- endif %}
   annotations:
-    {%- if values.host.includes("github") %}
-    github.com/project-slug: ${{ values.repoUrl }}
-    {%- endif %}
-    {%- if values.host.includes("gitlab") %}
-    gitlab.com/project-slug: ${{ values.repoUrl }}
-    {%- endif %}
+    ${{ values.host }}/project-slug: ${{ values.repoUrl }}
     backstage.io/techdocs-ref: dir:.
     backstage.io/kubernetes-id: ${{values.componentId | dump}}
     vault.io/secrets-path: ${{values.componentId | dump}}
