@@ -65,10 +65,10 @@ spec:
           ui:widget: 'range' 
           description: Set required disk size...
         instrumentation_namespace:
-        title: Namespace Instrumentation
-        default: "vkpr"
-        type: string
-        description: Specifies the namespace Instrumentation
+          title: Namespace Instrumentation
+          default: "vkpr"
+          type: string
+          description: Specifies the namespace Instrumentation
      ### Location Configuration
     - title: Choose a location
       required:
