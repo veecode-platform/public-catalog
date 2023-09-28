@@ -56,6 +56,14 @@ spec:
           title: Enable Nginx
           type: boolean
           default: true
+        cert_manager:
+          title: Specifies the cert_manager issuer type
+          type: string
+          description: Specifies the Cert_Manager issuer type.
+          default: "staging"
+          enum:
+            - "staging"
+            - "production"
 
 
      ### Location Configuration
@@ -101,6 +109,7 @@ spec:
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
           nginx: ${{ parameters.ngnix }}
+          cert_manager: ${{ parameters.cert_manager }}
 
     # check github
     - name: Check Github Provider

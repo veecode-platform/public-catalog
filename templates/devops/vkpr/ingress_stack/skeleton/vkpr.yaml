@@ -6,7 +6,7 @@ global:
 cert-manager:
   email: ${{ values.email }} 
   issuer:
-    type: "production"
+    type: "${{ values.cert_manager }} "
     solver: "DNS01"
 external-dns:
   enabled: true
