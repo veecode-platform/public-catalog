@@ -52,6 +52,10 @@ spec:
           title: Email 
           type: string
           description: Specifies the email to receive certificate notifications
+        nginx:
+          title: Enable Nginx
+          type: boolean
+          default: true
 
 
      ### Location Configuration
@@ -96,6 +100,7 @@ spec:
           owner: ${{ parameters.owner }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
+          nginx: ${{ parameters.ngnix }}
 
     # check github
     - name: Check Github Provider

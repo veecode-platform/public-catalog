@@ -64,6 +64,11 @@ spec:
           multipleOf: 5
           ui:widget: 'range' 
           description: Set required disk size...
+        instrumentation_namespace:
+        title: Namespace Instrumentation
+        default: "vkpr"
+        type: string
+        description: Specifies the namespace Instrumentation
      ### Location Configuration
     - title: Choose a location
       required:
@@ -107,6 +112,7 @@ spec:
           owner: ${{ parameters.owner }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
+          instrumentation_namespace: ${{ parameters.instrumentation_namespace }}
 
     # check github
     - name: Check Github Provider

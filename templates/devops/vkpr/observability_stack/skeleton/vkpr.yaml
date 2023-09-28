@@ -12,11 +12,11 @@ prometheus-stack:
     enabled: true
     persistence:
       enabled: true
-      size: 5Gi
+      size: ${{ values.allocated_storage }}Gi
   grafana:
     persistence:
       enabled: true
-      size: 5Gi
+      size: ${{ values.allocated_storage }}Gi
   helmArgs:
     prometheus:
       prometheusSpec:
@@ -24,7 +24,7 @@ prometheus-stack:
   prometheus:
     persistence:
       enabled: true
-      size: 5Gi
+      size: ${{ values.allocated_storage }}Gi
 loki:
   enabled: true    
   metrics: true
@@ -32,5 +32,6 @@ jaeger:
   enabled: true    
   metrics: true
 otel:
+  instrumentation: ${{ values.ingress_class }}
   enabled: true    
   metrics: true
