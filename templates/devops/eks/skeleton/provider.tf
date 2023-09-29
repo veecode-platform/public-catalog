@@ -9,3 +9,10 @@ provider "kubernetes" {
   cluster_ca_certificate = module.cluster.cluster_certificate_authority_data
   token                  = module.cluster.kubeconfig_token
 }
+
+provider "kubectl" {
+  host                   = module.cluster.cluster_endpoint
+  cluster_ca_certificate = module.cluster.cluster_certificate_authority_data
+  token                  = module.cluster.kubeconfig_token
+  load_config_file       = false
+}
