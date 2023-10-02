@@ -6,11 +6,11 @@ metadata:
   description: ${{values.description | dump}}
   {%- endif %}
   annotations:
-  {%- if values.host.includes("github") %}
+  {%- if values.host === 'github.com' %}
     github.com/project-slug: ${{values.repoUrl}}
     github.com/workflows: kong.yml
   {%- endif %}
-  {%- if values.host.includes("gitlab") %}
+  {%- if values.host === 'gitlab.com' %}
     gitlab.com/project-slug: ${{ values.repoUrl }}
     gitlab.com/jobs: Deploy:Install_Kong
   {%- endif %}
