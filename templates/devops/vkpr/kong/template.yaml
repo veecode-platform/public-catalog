@@ -105,6 +105,7 @@ spec:
           owner: ${{ parameters.owner }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
+          host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
 
     # check github
     - name: Check Github Provider
