@@ -4,9 +4,15 @@ metadata:
   name: ${{values.componentId | dump}}
   {%- if values.description %}
   description: ${{values.description | dump}}
-  {%- endif %}
   annotations:
+  {%- if values.host.includes("github") %}
     github.com/project-slug: ${{values.repoUrl}}
+    github.com/workflows: terraform-deploy.yml,terraform-destroy.yml{% if values.infracost%},infracost.yml{% endif %}
+  {%- endif %}
+  {%- if values.host.includes("gitlab") %}
+    gitlab.com/project-slug: ${{ values.repoUrl }}
+    gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB{% if values.infracost%},Infracost:INFRACOST_JOB{% endif %}
+  {%- endif %}
     backstage.io/techdocs-ref: dir:.
     vault.io/secrets-path: devportal
 spec:
