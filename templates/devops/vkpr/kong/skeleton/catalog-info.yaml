@@ -4,6 +4,7 @@ metadata:
   name: ${{values.componentId | dump}}
   {%- if values.description %}
   description: ${{values.description | dump}}
+  {%- endif %}
   annotations:
   {%- if values.host.includes("github") %}
     github.com/project-slug: ${{values.repoUrl}}
