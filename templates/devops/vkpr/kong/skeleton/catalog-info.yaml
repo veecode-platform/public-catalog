@@ -8,11 +8,11 @@ metadata:
   annotations:
   {%- if values.host.includes("github") %}
     github.com/project-slug: ${{values.repoUrl}}
-    github.com/workflows: terraform-deploy.yml,terraform-destroy.yml{% if values.infracost%},infracost.yml{% endif %}
+    github.com/workflows: kong.yml
   {%- endif %}
   {%- if values.host.includes("gitlab") %}
     gitlab.com/project-slug: ${{ values.repoUrl }}
-    gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB{% if values.infracost%},Infracost:INFRACOST_JOB{% endif %}
+    gitlab.com/jobs: Deploy:Install_Kong
   {%- endif %}
     backstage.io/techdocs-ref: dir:.
     vault.io/secrets-path: devportal
