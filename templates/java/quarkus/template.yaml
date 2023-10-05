@@ -335,13 +335,13 @@ spec:
           host : ${{ (parameters.repoUrl | parseRepoUrl).host }}
          
   
-
+    # check observability
     - name: Check Observability
       if: ${{ parameters.observability_window.observability_window_mode === 'default' }}
       action: fs:delete
       input:
         files: 
-          - ./.github/workflows/application_dashboards.yml
+          - ./.github/workflows/application-dashboards.yml
           - ./dashboards
 
     # check github
