@@ -114,8 +114,8 @@ spec:
         
     - title: Terraform Configuration
       required:
-        - terraformStateSpacetName
-        - terraformStateSpacetRegion
+        - terraformStateSpaceName
+        - terraformStateSpaceRegion
       properties:
         terraformStateSpaceName:
           title: Terraform State Space Name
