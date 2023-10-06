@@ -25,7 +25,6 @@ spec:
         - node_quantity
         - max_node_quantity
         - owner
-        - rolearn
       properties:
         cluster_name:
           title: k8S Cluster name
