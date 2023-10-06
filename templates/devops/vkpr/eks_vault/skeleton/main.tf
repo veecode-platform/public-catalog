@@ -81,10 +81,10 @@ YAML
   depends_on = [module.cluster]
 }
 
-resource "kubernetes_config_map_v1" "aws_auth" {
+resource "kubernetes_config_map_v1_data" "aws_auth" {
 
   metadata {
-    name      = "root-aws-auth"
+    name      = "aws-auth"
     namespace = "kube-system"
   }
 

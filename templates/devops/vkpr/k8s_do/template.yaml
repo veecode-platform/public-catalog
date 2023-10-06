@@ -18,8 +18,9 @@ spec:
     - title: K8S DO Configuration
       required:
         - cluster_name
-        - capacity_type
-        - instance_type
+        - k8s_version
+        - k8s_region
+        - instance_type_admin
         - default_quantity
         - node_quantity
         - max_node_quantity
