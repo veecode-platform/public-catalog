@@ -1,6 +1,4 @@
-# ${{ values.componentId }}
-
-${{ values.description }}
+# ${{ values.eks_cluster_name }}
 
 ## Getting started
 
