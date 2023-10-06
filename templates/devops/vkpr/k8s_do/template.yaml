@@ -183,13 +183,6 @@ spec:
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           rolearn: ${{ parameters.eks_cluster_name }}
     
-    - name: Check Infracost
-      if: ${{ parameters.infracost === false }}
-      action: fs:delete
-      input:
-        files: 
-          - ./.github/workflows/infracost.yml
-
     - name: Check Github Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }} 
       action: fs:delete
