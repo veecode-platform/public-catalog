@@ -164,7 +164,7 @@ spec:
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           infracost: ${{ parameters.infracost }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          rolearn: ${{ parameters.eks_cluster_name }}
+          rolearn: ${{ parameters.rolearn }}
     
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
