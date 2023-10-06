@@ -9,7 +9,7 @@ metadata:
   tags:
     - platform-templates
     - k8s
-    - eks_vault
+    - eks-vault
     - terraform
 spec:
   owner: veecode/platform
