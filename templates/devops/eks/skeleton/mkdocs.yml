@@ -1,5 +1,5 @@
-site_name: ${{values.componentId | dump}}
-site_description: ${{values.description | dump}}
+site_name: ${{values.eks_cluster_name | dump}}
+site_description: ${{values.eks_cluster_name | dump}}
 
 nav:
   - Introduction: index.md
