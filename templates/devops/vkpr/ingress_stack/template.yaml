@@ -43,6 +43,8 @@ spec:
       required:
         - domain
         - email
+        - nginx
+        - cert_manager
       properties:
         domain:
           title: Domain in Route53
@@ -55,7 +57,7 @@ spec:
         nginx:
           title: Enable Nginx
           type: string
-          description: Specifies the Cert_Manager issuer type.
+          description: Enable Nginx
           default: "false"
           enum:
             - "true"
@@ -110,7 +112,7 @@ spec:
           owner: ${{ parameters.owner }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
-          nginx: ${{ parameters.ngnix }}
+          nginx: ${{ parameters.nginx }}
           cert_manager: ${{ parameters.cert_manager }}
 
     # check github

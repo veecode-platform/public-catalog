@@ -11,4 +11,4 @@ cert-manager:
 external-dns:
   enabled: true
 nginx:
-  enabled: ${{ values.ngnix }} 
+  enabled: "${{ values.ngnix }}"
