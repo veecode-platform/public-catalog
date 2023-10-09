@@ -89,11 +89,6 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
   }
 
   data = {
-    mapUsers = jsonencode([{
-      userarn  = aws_iam_user.root-user.arn
-      username = aws_iam_user.root-user.name
-      groups   = ["system:masters"]
-    }])
     mapRoles = jsonencode([{
       groups   = ["system:masters"],
       rolearn  = "${local.config.rolearn}",

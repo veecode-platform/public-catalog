@@ -1,0 +1,38 @@
+image:
+  name: hashicorp/terraform:light
+  entrypoint: [""]
+
+stages:
+  - deploy
+  - destroy
+
+
+variables:
+  TF_ROOT: $CI_PROJECT_DIR
+  DEPLOY_JOB: 'false'
+  DESTROY_JOB: 'false'
+
+deploy:
+  stage: deploy
+  script:
+    - terraform --version
+    - terraform init
+    - terraform plan -var "do_token=${DO_TOKEN}" -no-color -out plan_cache.json
+    - terraform apply "plan_cache.json" -auto-approve
+  rules:
+    - if: '$DEPLOY_JOB == "true"'
+  artifacts:
+    name: kubeconf
+    paths:
+      - kube/* 
+    expire_in: 1 day
+
+destroy:
+  stage: destroy
+  script:
+    - terraform --version
+    - terraform init
+    - terraform destroy -var "do_token=${DO_TOKEN}" -auto-approve
+  rules:
+    - if: '$DESTROY_JOB == "true"'
+

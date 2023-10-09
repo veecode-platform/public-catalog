@@ -54,8 +54,12 @@ spec:
           description: Specifies the email to receive certificate notifications
         nginx:
           title: Enable Nginx
-          type: boolean
-          default: true
+          type: string
+          description: Specifies the Cert_Manager issuer type.
+          default: "false"
+          enum:
+            - "true"
+            - "false"
         cert_manager:
           title: Specifies the cert_manager issuer type
           type: string
@@ -64,8 +68,6 @@ spec:
           enum:
             - "staging"
             - "production"
-
-
      ### Location Configuration
     - title: Choose a location
       required:

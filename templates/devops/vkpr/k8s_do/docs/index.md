@@ -1,13 +1,9 @@
-# GitOps | Amazon Web Services - EKS Template
+# GitOps | K8S Digital Ocean
 
 **The GitOps project is a template for provisioning the EKS cluster on AWS.**
 
 ## How to use ?
 To use the template, the user must clone <a href="https://github.com/vertigobr/k8s-digitalocean">this repository.</a>
-
-### Project structure
-
-<img src="./imgs/image1.png"/>
 
 
 After performing the clone of the repository, it is necessary to configure three environment variables in the repository, namely: `DO_TOKEN `. To learn how to create the keys, visit <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey">the official documentation</a>.
@@ -52,6 +48,4 @@ The pipeline is divided into 2 workflows, namely:
 For the project to run as expected, it is necessary to configure some secrets in the pipeline, some are optional.
 
 :key: AWS_ACCESS_KEY `mandatory` <br>
-:key: AWS_SECRET_KEY `mandatory` <br>
-:key: AWS_REGION `mandatory` <br>
-:key: INFRACOST_API_KEY `optional` <br>
+

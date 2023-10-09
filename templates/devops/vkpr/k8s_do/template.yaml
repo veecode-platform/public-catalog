@@ -9,7 +9,6 @@ metadata:
   tags:
     - platform-templates
     - k8s
-    - eks-do
     - terraform
 spec:
   owner: veecode/platform
@@ -176,12 +175,13 @@ spec:
           node_quantity: ${{ parameters.node_quantity }}
           max_node_quantity: ${{ parameters.max_node_quantity }}
           terraformStateSpaceName: ${{ parameters.terraformStateSpaceName }}
+          terraformStateSpaceRegion: ${{ parameters.terraformStateSpaceRegion }}
+
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           owner: ${{ parameters.owner }}
-          terraformStateSpaceRegion: ${{ parameters.terraformStateSpaceRegion }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          rolearn: ${{ parameters.eks_cluster_name }}
+          
     
     - name: Check Github Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }} 
@@ -197,7 +197,6 @@ spec:
         files:
           - ./.github
     
-
     - id: publish
       name: Publish in github
       if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }}  
