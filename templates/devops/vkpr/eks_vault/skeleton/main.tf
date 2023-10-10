@@ -15,7 +15,9 @@ module "cluster" {
   tags                      = local.config.tags
   cluster_enabled_log_types = try(local.config.cluster_enabled_log_types, [""])
   aws_availability_zones    = try(local.config.aws_availability_zones, [""])
+
 }
+
 
 data "aws_eks_cluster" "cluster" {
   name = local.config.cluster_name
@@ -38,7 +40,6 @@ resource "aws_iam_openid_connect_provider" "openid_connect" {
   url             = data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer
   depends_on = [module.cluster]  
 }
-
 
 module "irsa-ebs-csi" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
@@ -81,20 +82,26 @@ YAML
   depends_on = [module.cluster]
 }
 
-resource "kubernetes_config_map_v1_data" "aws_auth" {
-
+resource "kubernetes_config_map" "aws_auth" {
   metadata {
-    name      = "aws-auth"
+    name      = "root-aws-auth"
     namespace = "kube-system"
   }
 
   data = {
-    mapRoles = jsonencode([{
+    mapRoles = jsonencode([
+      {
+      groups   = ["system:bootstrappers", "system:nodes"],
+      rolearn  = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy" ,
+      username = "system:node:{{EC2PrivateDNSName}}"
+      },
+      {
       groups   = ["system:masters"],
       rolearn  = "${local.config.rolearn}",
       username = "admin-pipeline"
-    }])
+      }
+    ])
   }
   depends_on = [module.cluster]
-  force = true
 }
+

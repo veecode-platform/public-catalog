@@ -203,7 +203,7 @@ spec:
       action: publish:github
       input:
         allowedHosts: ["github.com"]
-        description: EKS Cluster ${{ parameters.eks_cluster_name }}
+        description: EKS Cluster ${{ parameters.cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
 
@@ -213,7 +213,7 @@ spec:
       action: publish:gitlab
       input:
         allowedHosts: ["gitlab.com"]
-        description: EKS Cluster ${{ parameters.eks_cluster_name }}
+        description: EKS Cluster ${{ parameters.cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
     
