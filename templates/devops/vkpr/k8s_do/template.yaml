@@ -40,7 +40,7 @@ spec:
         k8s_version:
           title: Kubernetes Version
           type: string
-          description: Specifies the EKS Kubernetes Version
+          description: Specifies the Kubernetes Version
           default: "1.27"
           enum:
             - "1.28"
@@ -167,6 +167,7 @@ spec:
         url: ./skeleton      
         values:
           cluster_name: ${{ parameters.cluster_name }}
+          owner: ${{ parameters.owner }}
           k8s_version: ${{ parameters.k8s_version }}
           k8s_region: ${{ parameters.k8s_region }}
           instance_type_admin: ${{ parameters.instance_type_admin }}
@@ -176,13 +177,10 @@ spec:
           max_node_quantity: ${{ parameters.max_node_quantity }}
           terraformStateSpaceName: ${{ parameters.terraformStateSpaceName }}
           terraformStateSpaceRegion: ${{ parameters.terraformStateSpaceRegion }}
-
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          owner: ${{ parameters.owner }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           
-    
     - name: Check Github Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }} 
       action: fs:delete
@@ -213,7 +211,7 @@ spec:
       action: publish:gitlab
       input:
         allowedHosts: ["gitlab.com"]
-        description: Cluster ${{ parameters.cluster_name }}
+        description: Cluster k8s ${{ parameters.cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
     

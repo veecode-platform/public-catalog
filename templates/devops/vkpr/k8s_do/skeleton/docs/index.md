@@ -1,4 +1,4 @@
-# ${{ values.componentId }}
+# ${{ values.cluster_name }}
 
 ${{ values.description }}
 

@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: ${{ values.cluster_name | dump}}
+  name: ${{ values.cluster_name | dump }}
   {%- if values.description %}
   description: ${{values.description | dump}}
   {%- endif %}
@@ -14,13 +14,12 @@ metadata:
     {%- endif %}
     backstage.io/techdocs-ref: dir:.
     {%- if values.host.includes("github")%}
-    github.com/workflows: terraform-deploy.yml,terraform-destroy.yml{% if values.infracost%},infracost.yml{% endif %}
+    github.com/workflows: terraform-deploy.yml,terraform-destroy.yml
     {%- endif %}
     {%- if values.host.includes("gitlab")%}
-    gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB{% if values.infracost%},Infracost:INFRACOST_JOB{% endif %}
+    gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB
     {%- endif %}
 spec:
   type: devops
   lifecycle: experimental
   owner: ${{values.owner | dump}}
-  

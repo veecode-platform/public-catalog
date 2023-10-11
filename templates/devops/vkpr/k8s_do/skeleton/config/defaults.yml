@@ -1,5 +1,5 @@
 ---
-cluster_name: ${{ values.cluster_name }}
+cluster_name: "${{ values.cluster_name }}"
 cluster_region: "${{ values.k8s_region }}"
 cluster_version: "${{ values.k8s_version }}"
 
@@ -13,5 +13,5 @@ tags: ["VKPR", "k8s-digitalocean"]
 node_pool_size: "${{ values.instance_type_node }}"
 node_auto_scale: true
 min_nodes: ${{ values.node_quantity }}
-max_nodes: ${{ values.max_node_quantity }}"
+max_nodes: ${{ values.max_node_quantity }}
 tags: ["VKPR", "k8s-digitalocean"]

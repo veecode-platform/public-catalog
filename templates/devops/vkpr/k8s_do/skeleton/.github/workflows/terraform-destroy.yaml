@@ -1,4 +1,4 @@
-name: 99-Destroy Cluster
+name: Destroy Cluster
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
 jobs:
   destroy:
     runs-on: ubuntu-latest
-#    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
     steps:
       - uses: hashicorp/setup-terraform@v2
       - uses: actions/checkout@v3
@@ -15,19 +15,18 @@ jobs:
       - name: GitHub Action for DigitalOcean - doctl
         uses: digitalocean/action-doctl@v2.3.0
         with:
-          token: ${{ secrets.DO_TOKEN }}
+          token: ${{'${{'}} secrets.DO_TOKEN ${{'}}'}}
           
       - name: Restore Terraform state from cache
         uses: actions/cache@v2
         with:
           path: .terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+          key: ${{'${{'}} runner.os ${{'}}'}}-terraform-${{'${{'}} hashFiles('**/*.tf') ${{'}}'}}
           restore-keys: |
-            ${{ runner.os }}-terraform-
+            ${{'${{'}} runner.os ${{'}}'}}-terraform-
 
       - name: Initialize Terraform
         run: terraform init
 
       - name: Terraform destroy
-        run: terraform destroy -var "do_token=${{ secrets.DO_TOKEN }}" --auto-approve
-        
+        run: terraform destroy -var "do_token=${{'${{'}} secrets.DO_TOKEN ${{'}}'}}" --auto-approve

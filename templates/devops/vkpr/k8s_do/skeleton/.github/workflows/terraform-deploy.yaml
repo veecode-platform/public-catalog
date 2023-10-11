@@ -1,4 +1,4 @@
-name: 00-Deploy Cluster
+name: Deploy Cluster
 
 on:
   workflow_dispatch:
@@ -13,12 +13,12 @@ jobs:
       - name: GitHub Action for DigitalOcean - doctl
         uses: digitalocean/action-doctl@v2.3.0
         with:
-          token: ${{ secrets.DO_TOKEN }}
+          token: ${{'${{'}} secrets.DO_TOKEN ${{'}}'}}
       - name: Terraform Plan
         id: plan
         run: |
           terraform init 
-          terraform plan -var "do_token=${{ secrets.DO_TOKEN }}" -no-color -out plan_cache.json
+          terraform plan -var "do_token=${{'${{'}} secrets.DO_TOKEN ${{'}}'}}" -no-color -out plan_cache.json
           
       - name: Terraform apply
         run: terraform apply -input=false -no-color -auto-approve plan_cache.json   
@@ -27,9 +27,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
+          key: ${{'${{'}} runner.os ${{'}}'}}-terraform-${{'${{'}} hashFiles('**/*.tf') ${{'}}'}}
           restore-keys: |
-            ${{ runner.os }}-terraform-
+            ${{'${{'}} runner.os ${{'}}'}}-terraform-
 
       - name: Kubeconf artefact
         uses: actions/upload-artifact@v2
@@ -38,4 +38,3 @@ jobs:
           path: |
             kube/*
           retention-days: 1
-
