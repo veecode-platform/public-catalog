@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
     endpoint = "https://${{ values.terraformStateSpaceRegion }}.digitaloceanspaces.com"
-    region = "${{ values.terraformStateSpaceRegion }}"
+    region = "us-east-1"
     key = "${{ values.terraformStateSpaceRegion }}/terraform.tfstate"
     bucket = "${{ values.terraformStateSpaceName }}"
     access_key="DO00RMBFWTK82WNF4AHA"
