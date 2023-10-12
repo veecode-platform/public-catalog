@@ -23,6 +23,7 @@ spec:
           title: Project name
           type: string
           description: Name of the project
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
           ui:autofocus: true
           ui:field: EntityNamePicker
         owner:
