@@ -111,33 +111,20 @@ spec:
           description: Specifies the Node Group max quantity
           default: 3
         
-    - title: Terraform Configuration
+    - title: Terraform Cloud Configuration
       required:
-        - terraformStateSpaceName
-        - terraformStateSpaceRegion
+        - tf_organization
+        - tf_workspace
       properties:
-        terraformStateSpaceName:
-          title: Terraform State Space Name
+        tf_organization:
+          title: Terraform Cloud Organization
           type: string
-          description: Specifies your Terraform Space Bucket
+          description: Specifies your Terraform Cloud Organization
 
-        terraformStateSpaceRegion:
-          title: Space Region
+        tf_workspace:
+          title: Terraform Cloud Workspace
           type: string
-          description: Specifies the Terraform State Space region
-          default: 'nyc3'
-          enum:
-            - 'nyc1'
-            - 'nyc3'
-            - 'ams3'
-            - 'sfo2'
-            - 'sfo3'
-          enumNames:
-            - '(nyc1) New York City, United States'
-            - '(nyc3) New York City, United States'
-            - '(ams3) Amsterdam, the Netherlands'
-            - '(sfo2) San Francisco, United States'
-            - '(sfo3) San Francisco, United States'
+          description: Specifies your Terraform Cloud Workspace
           
     - title: Choose a location
       required:
@@ -175,8 +162,8 @@ spec:
           instance_type_node: ${{ parameters.instance_type_node }}
           node_quantity: ${{ parameters.node_quantity }}
           max_node_quantity: ${{ parameters.max_node_quantity }}
-          terraformStateSpaceName: ${{ parameters.terraformStateSpaceName }}
-          terraformStateSpaceRegion: ${{ parameters.terraformStateSpaceRegion }}
+          tf_organization: ${{ parameters.tf_organization }}
+          tf_workspace: ${{ parameters.tf_workspace }}
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
