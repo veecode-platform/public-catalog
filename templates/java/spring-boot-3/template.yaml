@@ -51,10 +51,8 @@ spec:
           default: "17"
           enum:
             - "17"
-            - "19"
           enumNames:
             - "17"
-            - "19"
         applicationPort:
           title: Application Port
           type: string
@@ -203,6 +201,7 @@ spec:
       required:
         - specPublish
         - specPublishBranch
+        - specTags
       description: Spec House Configuration
       properties:
         specPublishBranch:

@@ -3,7 +3,7 @@ image: ubuntu:latest
 stages:
   - build_project
   - create_K8s_artifacts
-{%- if values.kongExport %}
+{%- if values.exportKongKubernetes %} 
   - export_kong
 {%- endif %}
   - publish_k8s
@@ -19,7 +19,7 @@ variables:
   DOCKER_NAMESPACE: ${{ values.docker_organization }}
   DOCKER_DRIVER: overlay2
   SPRING_PROFILES_ACTIVE: gitlab-ci
-  DOCKER_HOST: tcp://docker:2375
+  DOCKER_HOST: tcp://docker:2375 
   DOCKER_TLS_CERTDIR: ""
   CONTAINER_IMAGE: {% if values.docker_window == 'custom' %}${{ values.docker_generic }}/$DOCKER_NAMESPACE/$PROJECT_NAME{% else %}docker.io/$DOCKER_NAMESPACE/$PROJECT_NAME{% endif %}
     
@@ -101,7 +101,7 @@ create_K8s_artifacts:
         .spec.destination.namespace="vkpr"''' -i config/${{values.componentId}}.yaml          
 
 
-{%- if values.kongExport %}    
+{%- if values.exportKongKubernetes %}    
 export_kong_kubernetes:
   stage: export_kong
   before_script:
