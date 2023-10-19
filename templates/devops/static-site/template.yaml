@@ -37,10 +37,6 @@ spec:
           title: Domain site name
           type: string
           description: Specifies the domain name
-        acmCertificateArn:
-          title: ACM Certificate ARN
-          type: string
-          description: Specifies the ACM Certificate ARN
         zoneid:
           title: Route 53 Hosted zone ID
           type: string
@@ -114,7 +110,7 @@ spec:
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           owner: ${{ parameters.owner }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
-          acmCertificateArn: ${{ parameters.acmCertificateArn }}
+          
     
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}

@@ -1,5 +1,5 @@
 ---
-distribution_name: ${{ values.name}}
-domain: ${{ values.domain }}
-zoneid: ${{ values.zoneid }}
-acm_certificate_arn: ${{ values.acmCertificateArn }}
+route53_zone_domain: "${{ values.domain }}"
+cdn_domain: "${{ values.name}}.${{ values.domain }}"
+id_zone: "${{ values.zoneid }}"
+bucket: ${{ values.name}}
