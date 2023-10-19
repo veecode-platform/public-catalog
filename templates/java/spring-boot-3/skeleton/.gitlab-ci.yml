@@ -153,9 +153,9 @@ publish_k8s:
 publish-spec:
   stage: publish_spec
   variables:
-    MOCK_SERVER: "${{ values.mockserverUrl }}"
+    MOCK_SERVER: "${{ values.mockserverUrl }}" 
     NAME: ""
-    TAGS: "{% for specTag in values.specTags | string | list %}${{ specTag }}{% endfor %}"
+    TAGS: "${{values.specTags}}"
   before_script:
     - apt-get update && apt-get -y install wget python3.9 jq git curl xz-utils
     - wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64

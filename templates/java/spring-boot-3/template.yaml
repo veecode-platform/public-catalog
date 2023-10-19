@@ -201,7 +201,6 @@ spec:
       required:
         - specPublish
         - specPublishBranch
-        - specTags
       description: Spec House Configuration
       properties:
         specPublishBranch:
