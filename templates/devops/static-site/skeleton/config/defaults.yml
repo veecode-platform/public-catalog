@@ -2,4 +2,4 @@
 route53_zone_domain: "${{ values.domain }}"
 cdn_domain: "${{ values.name}}.${{ values.domain }}"
 id_zone: "${{ values.zoneid }}"
-bucket: ${{ values.name}}
+bucket: "${{ values.name}}"
