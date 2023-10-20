@@ -55,8 +55,8 @@ To use the template, the user must clone the code properly configured previously
 npm i
 
 aws configure
-    AWS Access Key ID [**********************]: ${{AWS_KEY_ID}}
-    AWS Secret Access Key [**********************]: ${{AWS_SECRET_ACCESS_KEY}}
+    AWS Access Key ID [**********************]: ${{AWS_ACCESS_KEY}}
+    AWS Secret Access Key [**********************]: ${{AWS_SECRET_KEY}}
     Default region name [us-east-1]: ${{AWS_REGION}}
 
 sls deploy --stage [${dev | prod}]
@@ -82,5 +82,5 @@ The pipeline is divided into stages (defined at template creation time), and gen
 ## Pipeline Secrets
 For the project to run as expected, it is necessary to configure some secrets in the pipeline, some are optional.
 
- AWS_KEY_ID `mandatory` <br>
+ AWS_ACCESS_KEY `mandatory` <br>
  AWS_SECRET_ACCESS_KEY `mandatory` <br>
