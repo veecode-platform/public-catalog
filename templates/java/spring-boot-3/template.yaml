@@ -51,10 +51,8 @@ spec:
           default: "17"
           enum:
             - "17"
-            - "21"
           enumNames:
             - "17"
-            - "21"
         applicationPort:
           title: Application Port
           type: string
