@@ -4,7 +4,7 @@ networks:
     x-vpc: PublicSubnets # this is created by DisableNat
 
 services:
-  frontend:
+  ${{ values.componentId }}:
     networks:
       public:
     x-network:
