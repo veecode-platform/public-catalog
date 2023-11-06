@@ -3,14 +3,14 @@ kind: Template
 metadata:
   name: terraform-ecs-template
   title: AWS ECS Template
-  description: AWS ECS Template using Terraform and Github Actions
+  description: AWS ECS Template using Github Actions.
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:
     - platform-templates
     - ecs
     - aws
-    - terraform
+    - github
 spec:
   owner: veecode/platform
   type: devops
