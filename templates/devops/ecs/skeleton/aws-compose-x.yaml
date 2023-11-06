@@ -5,6 +5,11 @@ networks:
 
 services:
   frontend:
+    ports:
+      - mode: awsvpc
+        protocol: tcp
+        published: 80
+        target: 80
     networks:
       public:
     x-network:
@@ -24,7 +29,10 @@ x-cluster:
   Properties:
     CapacityProviders:
       - FARGATE_SPOT
+      - FARGATE
     ClusterName: ${{ values.componentId }}-cluster-ecs
     DefaultCapacityProviderStrategy:
       - CapacityProvider: FARGATE_SPOT
+        Weight: 2
+      - CapacityProvider: FARGATE
         Weight: 1
