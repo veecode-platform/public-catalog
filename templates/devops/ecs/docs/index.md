@@ -22,5 +22,6 @@ For the project to run as expected, it is necessary to configure some secrets in
 
 🔑 AWS_ACCESS_KEY `mandatory` <br>
 🔑 AWS_SECRET_KEY `mandatory` <br>
-🔑 AWS_ACCOUNT_ID `mandatory` <br>
-🔑 ECS_CLUSTER_NAME `mandatory` <br>
+🔑 AWS_REGION `mandatory` <br>
+🔑 DOCKER_PASSWORD `mandatory` <br>
+🔑 DOCKER_USERNAME `mandatory` <br>
