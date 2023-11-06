@@ -8,7 +8,8 @@ metadata:
   annotations:
     github.com/project-slug: ${{ values.repoUrl }}
     backstage.io/techdocs-ref: dir:.
+    github.com/workflows: build.yml
 spec:
-  type: devops
+  type: service
   lifecycle: development
   owner: ${{values.owner | dump}}
