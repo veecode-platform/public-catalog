@@ -1,0 +1,203 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: terraform-ecs-template
+  title: AWS ECS Template
+  description: AWS ECS Template using Terraform and Github Actions
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - platform-templates
+    - ecs
+    - aws
+    - terraform
+spec:
+  owner: veecode/platform
+  type: devops
+  parameters:
+    - title: Project Configuration
+      required:
+        - componentId
+        - owner
+      properties:
+        componentId:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this component is for.
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component (Devportal)
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group, User]
+        # applicationPort:
+        #     title: Application Port
+        #     type: string
+        #     default: "5000"
+
+    # - title: AWS Configuration
+      # required:
+      #   - subnet_ids,
+      #   - security_groups
+      # properties:
+        #  awsVpc:
+        #      title: Define Aws Vpc
+        #      type: string
+        #      description: We will need a VPC.
+          # awsRegion:
+          #   title: Aws Region
+          #   type: string
+          #   description: Specifies the AWS region
+          #   default: 'us-east-1'
+          #   enum:
+          #     - 'us-east-2'
+          #     - 'us-east-1'
+          #     - 'us-west-1'
+          #     - 'us-west-2'
+          #   enumNames:
+          #     - 'US East (Ohio)'
+          #     - 'US East (N. Virginia)'
+          #     - 'US West (N. California)'
+          #     - 'US West (Oregon)'
+          # subnet_ids:
+          #     title: Set the subnet ids
+          #     type: array
+          #     items:
+          #       type: string
+          # security_groups:
+          #     title: Set the security groups
+          #     type: array
+          #     items:
+          #       type: string
+
+    - title: Docker Registry
+      properties:
+        docker_window:
+          title: Select a docker host
+          type: object
+          properties:
+            docker_window_mode:
+              title: "Select a host of your choice"  
+              type: string
+              enum:
+              - default
+              - custom
+              enumNames:
+              - 'Docker Hub'
+              - 'Generic'
+              default: default
+            docker_organization:
+              title: "Enter your organization"
+              type: string
+          dependencies:
+            docker_window_mode:
+                oneOf:
+                - properties:
+                   docker_window_mode:
+                     enum:
+                        - default          
+                - properties:
+                    docker_window_mode:
+                      enum:
+                        - custom
+                    docker_generic:
+                      title: Insert a Generic host
+                      type: string
+
+
+    # - title: Spec Configuration
+    #   required:
+    #     - specPublish
+    #     - specPublishBranch
+    #   description: Define which repository your spec will be published in
+    #   properties:
+    #     specPublishBranch:
+    #               title: Branch name
+    #               type: string
+    #               description: the spec will be added to this branch
+    #     specPublish:
+    #       type: string
+    #       ui:field: RepoUrlPlatform
+    #       ui:options:
+    #         allowedHosts:
+    #           - github.com
+
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Choose a location to create the RDS Pipeline
+          ui:field: RepoUrlPlatform
+          ui:options:
+            allowedHosts:
+              - github.com
+        visibility:
+          title: Repository visibility
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton      
+        values:
+          componentId: ${{ parameters.componentId }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          # port: ${{ parameters.applicationPort}}
+          #vpc: ${{ parameters.awsVpc }}
+          # region: ${{ parameters.awsRegion }}
+          # subnets: ${{ parameters.subnet_ids}}
+          # security_groups: ${{ parameters.security_groups }}
+          docker_window: ${{ parameters.docker_window.docker_window_mode }}
+          docker_organization: ${{ parameters.docker_window.docker_organization }}
+          docker_generic: ${{ parameters.docker_window.docker_generic }}
+          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
+    
+
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts:
+          - github.com
+        description: ECS Name ${{ parameters.componentId }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: ${{ parameters.visibility }}
+    
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: "/catalog-info.yaml"
+        
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+  
+  

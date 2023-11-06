@@ -1,0 +1,48 @@
+name: deploy ECS with compose
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{'${{'}} secrets.AWS_ACCESS_KEY ${{'}}'}}
+          aws-secret-access-key: ${{'${{'}} secrets.AWS_SECRET_KEY ${{'}}'}}
+          aws-region: ${{'${{'}} secrets.AWS_REGION ${{'}}'}}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{'${{'}} secrets.DOCKER_USERNAME ${{'}}'}}
+          password: ${{'${{'}} secrets.DOCKER_PASSWORD ${{'}}'}}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          {%- if values.docker_window == 'custom' %}
+          tags: ${{ values.docker_generic }}/${{ values.docker_organization }}/${{ values.componentId }}:latest
+          {%- else %}
+          tags: ${{ values.docker_organization }}/${{ values.componentId }}:latest
+          {%- endif %}
+      
+      - name: Ecs-compose install
+        run: |
+            python3 -m venv ~/venv
+            source ~/venv/bin/activate
+            pip install pip -U
+            pip install ecs-composex
+
+      - name: Ecs-compose init and up
+        run: |
+          source ~/venv/bin/activate
+          ecs-compose-x init
+          ecs-compose-x up -f docker-compose.yaml -f aws-compose-x.yaml -n ${{ values.componentId }}-app
