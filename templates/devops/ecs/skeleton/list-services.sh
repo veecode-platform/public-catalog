@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CLUSTER_NAME="${{ values.componentId }}-cluster-ecs"
-TASK_DEFINITION="${{ values.componentId }}"
+TASK_DEFINITION="frontend"
 
 # List all services in the cluster
 SERVICE_ARNS=$(aws ecs list-services --cluster "$CLUSTER_NAME" --query "serviceArns[]" --output text)
