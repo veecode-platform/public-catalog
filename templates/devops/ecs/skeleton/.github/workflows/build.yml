@@ -46,3 +46,33 @@ jobs:
           source ~/venv/bin/activate
           ecs-compose-x init
           ecs-compose-x up -f docker-compose.yaml -f aws-compose-x.yaml -n ${{ values.componentId }}-app
+
+  restore_ip:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Restore IP from app
+        run: |
+          timeout=10
+          comando=$(./list-services.sh)
+          while [[ $counter -lt $timeout ]]; do
+              if [ -n "$comando" ]; then
+                  echo "IP=$(./list-ips.sh)"
+                  break
+              else
+                  echo "Checking the IP of the ${{ values.componentId }} application..."
+                  sleep 60
+                  counter=$((counter+1))
+                  comando=$(./list-services.sh)
+              fi
+          done
