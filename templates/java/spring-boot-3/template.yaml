@@ -201,12 +201,12 @@ spec:
       required:
         - specPublish
         - specPublishBranch
-      description: Spec House Configuration
+      description: Define which repository your spec will be published in
       properties:
         specPublishBranch:
                   title: Branch name
                   type: string
-                  description: Default branch of spechouse repository
+                  description: the spec will be added to this branch
         specTags:
           title: Tags
           type: string
@@ -285,7 +285,7 @@ spec:
       action: fs:delete
       input:
         files: 
-          - ./.github/workflows/application_dashboards.yml
+          - ./.github/workflows/application-dashboards.yml
           - ./dashboards
 
     # check github
