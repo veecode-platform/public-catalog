@@ -16,9 +16,8 @@ deploy:
   stage: deploy
   script:
     - terraform --version
-    - terraform init
     - terraform init -backend-config="token=${TF_API_TOKEN}" -reconfigure
-    - terraform apply 
+    - terraform apply -auto-approve
   rules:
     - if: '$DEPLOY_JOB == "true"'
   artifacts:
@@ -32,7 +31,6 @@ destroy:
   script:
     - terraform --version
     - terraform init -backend-config="token=${TF_API_TOKEN}" -reconfigure
-    - terraform destroy 
+    - terraform destroy -auto-approve
   rules:
     - if: '$DESTROY_JOB == "true"'
-
