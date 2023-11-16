@@ -1,5 +1,5 @@
 apiVersion: backstage.io/v1alpha1
-kind: Cluster
+kind: Component
 metadata:
   name: ${{ values.eks_cluster_name | dump}}
   {%- if values.description %}

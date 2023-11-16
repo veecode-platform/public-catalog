@@ -1,5 +1,5 @@
 include:
-  - remote: https://gitlab.com/vkpr/templates/-/raw/1.3.7/observability.gitlab-ci.yml
+  - remote: https://gitlab.com/vkpr/templates/-/raw/1.3.6/observability.gitlab-ci.yml?ref_type=tags
 
 cache:
   key: $CI_PIPELINE_ID

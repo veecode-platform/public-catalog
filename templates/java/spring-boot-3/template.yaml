@@ -23,7 +23,7 @@ spec:
           title: Project name
           type: string
           description: Name of the project
-          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
+          pattern: '^([a-z0-9]|[.]|[-])*$'
           ui:autofocus: true
           ui:field: EntityNamePicker
         owner:
@@ -51,8 +51,10 @@ spec:
           default: "17"
           enum:
             - "17"
+            - "21"
           enumNames:
             - "17"
+            - "21"
         applicationPort:
           title: Application Port
           type: string
@@ -201,12 +203,12 @@ spec:
       required:
         - specPublish
         - specPublishBranch
-      description: Define which repository your spec will be published in
+      description: Spec House Configuration
       properties:
         specPublishBranch:
                   title: Branch name
                   type: string
-                  description: the spec will be added to this branch
+                  description: Default branch of spechouse repository
         specTags:
           title: Tags
           type: string
@@ -285,7 +287,7 @@ spec:
       action: fs:delete
       input:
         files: 
-          - ./.github/workflows/application-dashboards.yml
+          - ./.github/workflows/application_dashboards.yml
           - ./dashboards
 
     # check github

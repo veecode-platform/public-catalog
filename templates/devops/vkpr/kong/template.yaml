@@ -62,17 +62,6 @@ spec:
           description: If you don't have a Kong license This will leave the Kong admin API open, Do you want to set up basic authentication?
           default: false
 
-    # Reuse Resources
-    - title: Cluster Settings
-      properties:
-        reuseResource:
-          title: Select a Cluster from our catalog
-          type: string
-          ui:field: ResourcePicker
-          ui:options:
-            catalogFilter:
-              kind: [Cluster]
-
      ### Location Configuration
     - title: Choose a location
       required:
@@ -117,7 +106,6 @@ spec:
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
-          cluster_name: ${{ parameters.reuseResource }}
 
     # check github
     - name: Check Github Provider
