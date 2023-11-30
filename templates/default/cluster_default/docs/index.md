@@ -1,75 +1,23 @@
-# GitOps | Amazon Web Services - EKS Template
+# Cluster Default
 
-**The GitOps project is a template for provisioning the EKS cluster on AWS.**
+## Getting started
 
-## How to use ?
-To use the template, the user must clone <a href="https://github.com/vertigobr/aws-eks">this repository.</a>
+Start writing your documentation by adding more markdown (.md) files to this folder (/docs) or replace the content in this file.
 
-### Project structure
+## Table of Contents
 
-<img src="./imgs/image1.png"/>
+The Table of Contents on the right is generated automatically based on the hierarchy
+of headings. Only use one H1 (`#` in Markdown) per file.
 
+## Site navigation
 
-**This template provides a automation solution for provisioning the EKS cluster.**
-A default provisioning configuration located in config/defaults.yml that can be changed according to the user's needs.
+For new pages to appear in the left hand navigation you need edit the `mkdocs.yml`
+file in root of your repo. The navigation can also link out to other sites.
 
+Alternatively, if there is no `nav` section in `mkdocs.yml`, a navigation section
+will be created for you. However, you will not be able to use alternate titles for
+pages, or include links to other sites.
 
-With the environment variables defined in the repository, it is now possible to run the pipeline for provisioning the EKS cluster, but there is a default provisioning configuration located in config/defaults.yml that can be changed according to the user's needs.
+Note that MkDocs uses `mkdocs.yml`, not `mkdocs.yaml`, although both appear to work.
+See also <https://www.mkdocs.org/user-guide/configuration/>.
 
-**Example**
-
-~~~yaml
-
-cluster_name: #example_name
-cluster_version: "1.20"
-cidr_block: 10.50.0.0/16
-private_subnets:
-  - 10.50.1.0/24
-  - 10.50.2.0/24
-  - 10.50.3.0/24
-public_subnets:
-  - 10.50.4.0/24
-  - 10.50.5.0/24
-  - 10.50.6.0/24
-aws_availability_zones: [""]
-node_groups:
-  eks-sample:
-    desired_capacity: "1"
-    max_capacity: "3"
-    min_capacity: "1"
-    ami_type: AL2_x86_64
-    instance_types:
-      - t3.small
-    capacity_type: #choice
-cluster_enabled_log_types:
-  - api
-  - audit
-  - authenticator
-  - controllerManager
-  - scheduler
-users_list:
-  - name: root-user
-    role: root
-tags:
-  Project: #Project
-  Source: aws-eks
-~~~
-
-**pipeline**
-
-The pipeline is divided into 2 workflows, namely:
-
-
-**Deploy (manual execution):** Provisions infrastructure via Terraform.
-
-**Destroy (manual execution):** Destroys the infrastructure.
-
----
-
-## Pipeline Secrets
-For the project to run as expected, it is necessary to configure some secrets in the pipeline, some are optional.
-
-:key: AWS_ACCESS_KEY `mandatory` <br>
-:key: AWS_SECRET_KEY `mandatory` <br>
-:key: AWS_REGION `mandatory` <br>
-:key: INFRACOST_API_KEY `optional` <br>

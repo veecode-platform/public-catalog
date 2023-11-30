@@ -8,7 +8,7 @@ metadata:
   annotations:
     github.com/project-slug: ${{ values.repoUrl }}
     backstage.io/techdocs-ref: dir:.
-    veecode/cluster-name: "devportal-kubernetes"  #annotations for cluster plugin
+    veecode/cluster-name: "devportal-kubernetes"
 spec:
   type: devops
   lifecycle: experimental
