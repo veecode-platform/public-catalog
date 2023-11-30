@@ -9,6 +9,7 @@ spec:
     - ./devops/static-site/template.yaml
     - ./devops/eks/template.yaml
     - ./devops/rds/template.yaml
+    - ./devops/ecs/template.yaml
     #- ./devops/rds-2.0/template.yaml
     - ./devops/insomnia-project/template.yaml
     - ./devops/openapi-project/template.yaml
@@ -20,4 +21,6 @@ spec:
     - ./devops/vkpr/observability_stack/template.yaml
     - ./java/spring-boot-3/template.yaml
     - ./java/quarkus/template.yaml
-    
+    - ./devops/vkpr/cluster_ec2/template.yaml
+    - ./default/eks_default/template.yaml
+    - ./default/express_default/template.yaml

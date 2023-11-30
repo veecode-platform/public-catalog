@@ -1,330 +1,42 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: terraform-rds-template-2
-  title: RDS Template 2.0 Version
-  description: RDS Template 
+  name: terraform-eks-template_vault
+  title: Provision EKS Cluster Vault Autentication
+  description: Provision EKS Cluster using Terraform enable Vault Autentication
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:
     - platform-templates
-    - rds
+    - k8s
+    - eks-vault
     - terraform
 spec:
   owner: veecode/platform
   type: devops
   parameters:
-    # internal use in devportal
-    - title: Information for using the catalog
-      required:
-        - componentId
-        - owner
+  ### Project Configuration
+    - title: Cluster Settings
       properties:
-        componentId:
-          title: Name
+        reuseResource:
+          title: Select a Cluster from our catalog
           type: string
-          description: Unique name of the component
-          ui:field: EntityNamePicker
-        description:
-          title: Description
-          type: string
-          description: Help others understand what this component is for.
+          ui:field: ResourcePicker
+          ui:options:
+            catalogFilter:
+              kind: [Cluster]
         owner:
           title: Owner
           type: string
-          description: Owner of the component (Devportal)
+          description: Owner of the component
           ui:field: OwnerPicker
           ui:options:
-            catalogFilter:
-              kind: [Group, User]
-    # project
-    - title: RDS Configuration
-      required:
-        - structure_automation
-        - subnet
-        - subnet_ids
-        - engine_version
-      properties:
-        structure_automation: 
-          title: What network structure will this automation need?
-          type: string
-          description: We will need a VPC , or something similar...
-        access_type:    
-          title: make publicly accessible
+            allowedKinds:
+              - Group
+        infracost:
+          title: Enable Infracost Estimate
           type: boolean
           default: false
-        subnet: 
-          title: Define Subnet
-          type: string
-          description: Define which subnet will be used
-        subnet_ids:
-          title: Set the subnet subnet ids
-          type: array
-          items:
-            type: string
-        multi_az:
-          title: Multi AZ
-          type: boolean
-          default: false
-        allocated_storage:
-          title: Whats the allocated storage? (in GB)
-          type: integer
-          minimum: 0
-          maximum: 100
-          default: 5
-          multipleOf: 5
-          ui:widget: 'range' 
-          description: Set required disk size...
-        upscalling: 
-          title: Do use Upscalling? (in GB)
-          type: number
-          description: Define the Upscalling, if not used set 0
-          default: 0
-          minimum: 0       
-        encrypted_storage:
-          title: Encrypted Storage
-          type: boolean
-          default: false
-        engine:
-          title: Engine
-          type: string
-          description: Set the Engine used
-          default: postgres
-          enum:
-          - postgres
-          - mariadb
-          - mysql
-          - aurora
-          enumNames:
-          - 'PostgresSQL'
-          - 'Maria DB'
-          - 'MySQL'
-          - 'Amazon Aurora MySQL'
-        engine_version:
-          title: Engine Version
-          type: string
-          description: Set the Engine Version Used
-        instance_class:
-          title: Instance Class Type
-          type: string
-          default: db.t3.micro
-          description: Set the instance class...
-        storage_type: 
-          title: Storage Type
-          type: string
-          description: What is the Storage Type?
-          default: gp2
-          enum:
-          - gp2
-          - gp3
-          - io1
-          enumNames:
-          - 'General Purpose SSD (gp2)'
-          - 'General Purpose SSD (gp3) - new'
-          - 'Provisioned IOPS (io1)'
-        monitoring_interval:
-          title: Monitoring Interval (in days)
-          type: number
-          minimum: 0
-          default: 30
-        performance_insights_retention_period:
-          title: Performance insights retention period (in days)
-          type: number
-          minimum: 0
-          default: 7
-        iam_database_authentication:
-          title: Iam database authentication
-          type: boolean
-          default: false
-            
-    - title: Define Access
-      required:
-        - starting_base
-        - starting_username
-        - password_db
-      properties:
-        starting_base:
-          title: Starting Base
-          type: string
-          description: What is the name of the starting base?
-        starting_username:
-          title: Starting Username
-          type: string
-          description: What is the initial username?
-        password_db:
-          title: Password
-          type: string
-          ui:widget: password
-          description: Specifies the DB Password
-
-      
-    - title: Terraform Configuration
-      required:
-        - bucket_name
-        # - bucket_region
-        # - tags
-        # - outputs
-      properties:
-        bucket_name:    
-          title: Set the Bucket
-          type: string
-          description: Define an active Bucket, if it does not exist, create a new one before continuing...
-        tags:
-          title: Set Tags
-          additionalProperties:
-            type: string
-          ui:placeholder: 
-            Define the Tags
-          
-    - title: BackUp
-      properties:
-        automated_backup:  # check
-          title: Enable automated backups
-          type: boolean
-          default: false
-        backup_retention:
-          title: Backup Retention (in days)
-          type: number
-          minimum: 0
-          default: 7
-          description: What is the backup retention period?
-        backup_window:
-          title: Backup Window
-          type: object
-          properties:
-            backup_window_mode:
-              title: Do you want to configure manually?
-              type: string
-              enum:
-              - custom
-              - default
-              enumNames:
-              - 'Choose a window'
-              - 'No preference'
-              default: default
-          dependencies:
-              backup_window_mode:
-                    oneOf:
-                    - properties:
-                        backup_window_mode:
-                          enum:
-                            - default
-                    - properties:
-                        backup_window_mode:
-                          enum:
-                            - custom
-                        start_time_backup:
-                          title: Start Time Backup
-                          type: string
-                          maxLength: 5
-                          default: '00:00'
-                          ui:help: 'HH:MM 24-hour format'
-                        stop_time_backup:
-                          title: Stop Time Backup
-                          type: string
-                          maxLength: 5
-                          default: '00:00'
-                          ui:help: 'HH:MM 24-hour format'
-                          
-                        # duration_backup:
-                        #   title: Duration (in hours)
-                        #   type: number
-                        #   default: 0
-                        #   minimum: 0
-        snapshot:  # skip_final_snapshot ?
-          title: Snapshot after destroy
-          type: boolean
-          default: false
-
-    - title: Maintenance
-      properties:
-        deletion_protection:  
-          title: Deletion Protection
-          type: boolean
-          default: true
-          ui:help: Protects the database being deleted accidentally. While this option is enabled, you can't delete the database.
-        maintenance_window:
-          title: Maintenance Window
-          type: object
-          properties:
-            maintenance_window_mode:
-              title: "Do you want to configure manually ?"  
-              type: string
-              enum:
-              - custom
-              - default
-              enumNames:
-              - 'Choose a window'
-              - 'No preference'
-              default: default
-          dependencies:
-            maintenance_window_mode:
-                oneOf:
-                - properties:
-                   maintenance_window_mode:
-                     enum:
-                        - default          
-                - properties:
-                    maintenance_window_mode:
-                      enum:
-                        - custom
-                    start_day_maintenance:
-                      title: Start day
-                      type: string
-                      default: sun
-                      enum:
-                      - sun
-                      - mon
-                      - tue
-                      - wed
-                      - thu
-                      - fri
-                      - sat
-                      enumNames:
-                      - 'Sunday'
-                      - 'Monday'
-                      - 'Tuesday'
-                      - 'Wednesday'
-                      - 'Thursday'
-                      - 'Friday'
-                      - 'Saturday'
-                    start_time_maintenance:
-                      title: Start Time (UTC)
-                      type: string
-                      maxLength: 5
-                      default: '00:00'
-                      ui:help: 'HH:MM 24-hour format'
-                    stop_day_maintenance:
-                      title: Stop day
-                      type: string
-                      default: sun
-                      enum:
-                      - sun
-                      - mon
-                      - tues
-                      - wed
-                      - thu
-                      - fri
-                      - sat
-                      enumNames:
-                      - 'Sunday'
-                      - 'Monday'
-                      - 'Tuesday'
-                      - 'Wednesday'
-                      - 'Thursday'
-                      - 'Friday'
-                      - 'Saturday'
-                    stop_time_maintenance:
-                      title: Stop Time (UTC)
-                      type: string
-                      maxLength: 5
-                      default: '00:00'
-                      ui:help: 'HH:MM 24-hour format'
-                    # duration_maintenance:
-                    #   title: Duration (in hours)
-                    #   type: number
-                    #   default: 0 
-                    #   minimum: 0
 
     - title: Choose a location
       required:
@@ -333,10 +45,8 @@ spec:
         repoUrl:
           title: Repository Location
           type: string
+          description: Choose a location to create the EKS Cluster Pipeline
           ui:field: RepoUrlPlatform
-          ui:options:
-            allowedHosts:
-              - github.com
         visibility:
           title: Repository visibility
           type: string
@@ -347,7 +57,7 @@ spec:
             - 'Public'
             - 'Private'
           default: private
-          
+
   steps:
     - id: template
       name: Fetch Skeleton + Template
@@ -355,64 +65,56 @@ spec:
       input:
         url: ./skeleton      
         values:
-          componentId: ${{ parameters.componentId }}
-          description: ${{ parameters.description }}
+          eks_cluster_name: ${{ parameters.reuseResource | parseJSON | pick('name')}}
           owner: ${{ parameters.owner }}
-          structure_automation: ${{ parameters.structure_automation }}
-          access_type: ${{ parameters.access_type }}
-          subnet: ${{ parameters.subnet }}
-          subnet_ids: ${{ parameters.subnet_ids }}
-          zone: ${{ parameters.zone }}
-          multi_az: ${{ parameters.multi_az }}
-          allocated_storage: ${{ parameters.allocated_storage }}
-          upscalling: ${{ parameters.upscalling }}
-          encrypted_storage: ${{ parameters.encrypted_storage }}
-          engine: ${{ parameters.engine }}
-          engine_version: ${{ parameters.engine_version}}
-          instance_class: ${{ parameters.instance_class }}
-          storage_type: ${{ parameters.storage_type }}
-          monitoring_interval: ${{ parameters.monitoring_interval }}
-          performance_insights_retention_period: ${{ parameters.performance_insights_retention_period }}
-          iam_database_authentication: ${{ parameters.iam_database_authentication }}
-          starting_base: ${{ parameters.starting_base }}
-          starting_username: ${{ parameters.starting_username }}
-          password_db: ${{ parameters.password_db }}
-          bucket_name: ${{ parameters.bucket_name }}
-          bunket_region: ${{ parameters.bunket_region }}
-          tags: ${{ parameters.tags }}
-          outputs: ${{ parameters.outputs }}
-          automated_backup: ${{ parameters.automated_backup }}
-          backup_retention: ${{ parameters.backup_retention }}
-          snapshot: ${{ parameters.snapshot }}
-          backup_window: ${{ parameters.backup_window.backup_window_mode}}
-          start_time_backup: ${{ parameters.backup_window.start_time_backup }}
-          stop_time_backup: ${{ parameters.backup_window.stop_time_backup }}
-          # duration_backup: ${{ parameters.duration_backup }}
-          deletion_protection: ${{ parameters.deletion_protection }}
-          maintenance_window: ${{ parameters.maintenance_window.maintenance_window_mode }}
-          start_day_maintenance: ${{ parameters.maintenance_window.start_day_maintenance }}
-          start_time_maintenance: ${{ parameters.maintenance_window.start_time_maintenance }}
-          stop_day_maintenance: ${{ parameters.maintenance_window.stop_day_maintenance }}
-          stop_time_maintenance: ${{ parameters.maintenance_window.stop_time_maintenance }}
-          # duration_maintenance: ${{ parameters.duration_maintenance }}
+          k8s_version: ${{ parameters.reuseResource | parseJSON | pick('k8s_version')}}
+          cidr_block : ${{ parameters.reuseResource | parseJSON | pick('cidr_block')}}
+          private_subnets : ${{ parameters.reuseResource | parseJSON | pick('private_subnets')}}
+          private_subnets : ${{ parameters.reuseResource | parseJSON | pick('public_subnets')}}
+          instance_type: ${{ parameters.reuseResource | parseJSON | pick('instance_type')}}
+          capacity_type: ${{ parameters.reuseResource | parseJSON | pick('capacity_type')}}
+          node_quantity: ${{ parameters.reuseResource | parseJSON | pick('node_quantity')}}
+          max_node_quantity: ${{ parameters.reuseResource | parseJSON | pick('max_node_quantity')}}
+          rolearn: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          terraformStateBucketName: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
+          host: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          infracost: ${{ parameters.infracost }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          
+          domain: ${{ parameters.reuseResource | parseJSON | pick('domain')}}
+          email: ${{ parameters.reuseResource | parseJSON | pick('email')}}
+          nginx: ${{ parameters.reuseResource | parseJSON | pick('nginx')}}
+          cert_manager: ${{ parameters.reuseResource | parseJSON | pick('cert_manager')}}
+          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishBranch: ${{ parameters.specPublishBranch }}
+          specTags: ${{ parameters.specTags }}
+          componentId: ${{ parameters.componentId }}
+                 
+    - name: Check Infracost
+      if: ${{ parameters.infracost === false }}
+      action: fs:delete
+      input:
+        files: 
+          - ./.github/workflows/infracost.yml
+
     - id: publish
-      name: Publish
+      name: Publish in github  
       action: publish:github
       input:
-        allowedHosts:
-          - github.com
-        description: RDS Name ${{ parameters.name }}
+        allowedHosts: ["github.com"]
+        description: EKS Cluster ${{ parameters.eks_cluster_name }}
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: ${{ parameters.visibility }}
-    
+ 
     - id: register
       name: Register
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
+        
   output:
     links:
       - title: Repository

@@ -15,6 +15,7 @@ spec:
   owner: veecode/platform
   type: devops
   parameters:
+    ### Project Configuration
     - title: EKS Configuration
       required:
         - eks_cluster_name
@@ -123,7 +124,39 @@ spec:
           title: Enable Infracost Estimate
           type: boolean
           default: false
-
+     ### Ingress Configuration
+    - title: Ingress Configuration
+      required:
+        - domain
+        - email
+        - nginx
+        - cert_manager
+      properties:
+        domain:
+          title: Domain in Route53
+          type: string
+          description: Specifies the Domain on AWS Route53
+        email:
+          title: Email 
+          type: string
+          description: Specifies the email to receive certificate notifications
+        nginx:
+          title: Enable Nginx
+          type: string
+          description: Enable Nginx
+          default: "false"
+          enum:
+            - "true"
+            - "false"
+        cert_manager:
+          title: Specifies the cert_manager issuer type
+          type: string
+          description: Specifies the Cert_Manager issuer type.
+          default: "staging"
+          enum:
+            - "staging"
+            - "production"
+    ### Location Configuration
     - title: Choose a location
       required:
         - repoUrl
@@ -152,20 +185,29 @@ spec:
         url: ./skeleton      
         values:
           eks_cluster_name: ${{ parameters.eks_cluster_name }}
+          owner: ${{ parameters.owner }}
           k8s_version: ${{ parameters.k8s_version }}
           instance_type: ${{ parameters.instance_type }}
           capacity_type: ${{ parameters.capacity_type }}
           node_quantity: ${{ parameters.node_quantity }}
           max_node_quantity: ${{ parameters.max_node_quantity }}
+          rolearn: ${{ parameters.rolearn }}
           terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          owner: ${{ parameters.owner }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           infracost: ${{ parameters.infracost }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          rolearn: ${{ parameters.rolearn }}
-    
+          domain: ${{ parameters.domain }}
+          email: ${{ parameters.email }}
+          nginx: ${{ parameters.nginx }}
+          cert_manager: ${{ parameters.cert_manager }}
+          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishBranch: ${{ parameters.specPublishBranch }}
+          specTags: ${{ parameters.specTags }}
+          componentId: ${{ parameters.componentId }}
+                 
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
       action: fs:delete

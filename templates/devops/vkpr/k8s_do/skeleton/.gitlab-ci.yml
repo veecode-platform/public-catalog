@@ -16,9 +16,8 @@ deploy:
   stage: deploy
   script:
     - terraform --version
-    - terraform init
-    - terraform plan -var "do_token=${DO_TOKEN}" -no-color -out plan_cache.json
-    - terraform apply "plan_cache.json" -auto-approve
+    - terraform init -backend-config="token=${TF_API_TOKEN}" -reconfigure
+    - terraform apply -auto-approve
   rules:
     - if: '$DEPLOY_JOB == "true"'
   artifacts:
@@ -31,8 +30,7 @@ destroy:
   stage: destroy
   script:
     - terraform --version
-    - terraform init
-    - terraform destroy -var "do_token=${DO_TOKEN}" -auto-approve
+    - terraform init -backend-config="token=${TF_API_TOKEN}" -reconfigure
+    - terraform destroy -auto-approve
   rules:
     - if: '$DESTROY_JOB == "true"'
-

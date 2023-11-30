@@ -10,7 +10,7 @@ jobs:
       AWS_ACCESS_KEY: ${{'${{'}} secrets.AWS_ACCESS_KEY ${{'}}'}}
       AWS_SECRET_KEY: ${{'${{'}} secrets.AWS_SECRET_KEY ${{'}}'}}
       AWS_REGION: ${{'${{'}} secrets.AWS_REGION ${{'}}'}}
-      CLUSTER_NAME: ${{'${{'}} secrets.CLUSTER_NAME ${{'}}'}}
+      CLUSTER_NAME: {%- if values.cluster_name %} ${{ values.cluster_name }} {%- else %} ${{'${{'}} secrets.CLUSTER_NAME ${{'}}'}}{%- endif %}
       KONG_ADMIN_PASSWORD: ${{'${{'}} secrets.KONG_ADMIN_PASSWORD ${{'}}'}}
       POSTGRES_PASSWORD: ${{'${{'}} secrets.POSTGRES_PASSWORD ${{'}}'}}
       KONG_LICENSE: ${{'${{'}} secrets.KONG_LICENSE ${{'}}'}}

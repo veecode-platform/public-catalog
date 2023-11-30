@@ -1,0 +1,126 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: terraform-eks-environment
+  title: Provision EKS Environment
+  description: Provision EKS Cluster using Terraform enable Vault Autentication
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - platform-templates
+    - k8s
+    - eks-vault
+    - terraform
+spec:
+  owner: veecode/platform
+  type: devops
+  parameters:
+  ### Project Configuration
+    - title: Enviroment Settings
+      properties:
+        reuseResource:
+          title: Select the enviromnet from our catalog
+          type: string
+          ui:field: ResourcePicker
+          ui:options:
+            catalogFilter:
+              kind: [Environment]
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+        infracost:
+          title: Enable Infracost Estimate
+          type: boolean
+          default: false
+
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          description: Choose a location to create the EKS Cluster Pipeline
+          ui:field: RepoUrlPlatform
+        visibility:
+          title: Repository visibility
+          type: string
+          enum:
+            - public
+            - private
+          enumNames:
+            - 'Public'
+            - 'Private'
+          default: private
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton      
+        values:
+          eks_cluster_name: ${{ parameters.reuseResource | parseJSON | pick('name')}}
+          owner: ${{ parameters.owner }}
+          k8s_version: ${{ parameters.reuseResource | parseJSON | pick('k8s_version')}}
+          cidr_block : ${{ parameters.reuseResource | parseJSON | pick('cidr_block')}}
+          private_subnets : ${{ parameters.reuseResource | parseJSON | pick('private_subnets')}}
+          public_subnets : ${{ parameters.reuseResource | parseJSON | pick('public_subnets')}}
+          instance_type: ${{ parameters.reuseResource | parseJSON | pick('instance_type')}}
+          capacity_type: ${{ parameters.reuseResource | parseJSON | pick('capacity_type')}}
+          node_quantity: ${{ parameters.reuseResource | parseJSON | pick('node_quantity')}}
+          max_node_quantity: ${{ parameters.reuseResource | parseJSON | pick('max_node_quantity')}}
+          rolearn: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          terraformStateBucketName: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
+          host: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          infracost: ${{ parameters.infracost }}
+          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          domain: ${{ parameters.reuseResource | parseJSON | pick('domain')}}
+          email: ${{ parameters.reuseResource | parseJSON | pick('cert_manager_email')}}
+          nginx: ${{ parameters.reuseResource | parseJSON | pick('nginx')}}
+          cert_manager: ${{ parameters.reuseResource | parseJSON | pick('cert_manager_issuer_type')}}
+          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          specPublishBranch: ${{ parameters.specPublishBranch }}
+          specTags: ${{ parameters.specTags }}
+          componentId: ${{ parameters.componentId }}
+                 
+    - name: Check Infracost
+      if: ${{ parameters.infracost === false }}
+      action: fs:delete
+      input:
+        files: 
+          - ./.github/workflows/infracost.yml
+
+    - id: publish
+      name: Publish in github  
+      action: publish:github
+      input:
+        allowedHosts: ["github.com"]
+        description: EKS Cluster ${{ parameters.eks_cluster_name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: ${{ parameters.visibility }}
+ 
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: /catalog-info.yaml
+        
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+  
+  

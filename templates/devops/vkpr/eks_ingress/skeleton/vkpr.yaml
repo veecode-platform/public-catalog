@@ -1,0 +1,14 @@
+global:
+  domain: ${{ values.domain }} 
+  ingressClassName: nginx
+  secure: true
+  provider: aws
+cert-manager:
+  email: ${{ values.email }} 
+  issuer:
+    type: "${{ values.cert_manager }}"
+    solver: "DNS01"
+external-dns:
+  enabled: true
+nginx:
+  enabled: {% if values.ngnix  == "true" %}true{% else %}false{% endif %}
