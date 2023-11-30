@@ -22,5 +22,5 @@ spec:
     - ./java/spring-boot-3/template.yaml
     - ./java/quarkus/template.yaml
     - ./devops/vkpr/cluster_ec2/template.yaml
-    - ./default/eks_default/template.yaml
-    - ./default/express_default/template.yaml
+    - ./default/cluster_default/template.yaml
+    - ./default/project_default/template.yaml

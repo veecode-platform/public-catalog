@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Cluster
+metadata:
+  name: ${{ values.componentId | dump}}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  annotations:
+    github.com/project-slug: ${{ values.repoUrl }}
+    backstage.io/techdocs-ref: dir:.
+    veecode/cluster-name: "devportal-kubernetes"  #annotations for cluster plugin
+spec:
+  type: devops
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}
+  dependsOn: ["environment:default/${{values.environment_name}}"]
+  
