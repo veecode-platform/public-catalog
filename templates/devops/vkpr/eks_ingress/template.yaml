@@ -25,6 +25,20 @@ spec:
           ui:options:
             catalogFilter:
               kind: [Environment]
+    ### Project Configuration
+    - title: EKS Configuration
+      required:
+        - eks_cluster_name
+        - capacity_type
+        - instance_type
+        - node_quantity
+        - max_node_quantity
+        - owner
+      properties:
+        eks_cluster_name:
+          title: EKS Cluster name
+          type: string
+          description: Specifies the EKS Cluster name
         owner:
           title: Owner
           type: string
@@ -33,11 +47,94 @@ spec:
           ui:options:
             allowedKinds:
               - Group
+        k8s_version:
+          title: Kubernetes Version
+          type: string
+          description: Specifies the EKS Kubernetes Version
+          default: "1.27"
+          enum:
+            - "1.27"
+            - "1.26"
+            - "1.25"
+            - "1.24"
+        instance_type:
+          title: Node instance type
+          type: string
+          description: Specifies the EKS Node instance type
+          default: t3.small
+          enum:
+            - t3.small
+            - m5.large
+            - m5.xlarge
+            - t4g.small
+            - m6g.large
+            - m6g.xlarge
+          enumNames:
+            - "t3.small (vCPU:2, Mem: 2Gib)"
+            - "m5.large (vCPU:2, Mem: 8Gib)"
+            - "m5.xlarge (vCPU:4, Mem: 16Gib)"
+            - "t4g.small (vCPU:2, Mem: 2Gib)"
+            - "m6g.large (vCPU:2, Mem: 8Gib) ARM"
+            - "m6g.xlarge (vCPU:4, Mem: 16Gib) ARM"
+        capacity_type:
+          title: Purchasing option
+          type: string
+          description: Specifies the Node Group purchasing option
+          default: SPOT
+          enum:
+            - 'ON_DEMAND'
+            - 'SPOT'
+          enumNames:
+            - 'On demand'
+            - 'Spot Instance'
+            
+        node_quantity:
+          title: Node Quantity
+          type: number
+          description: Specifies the Node Group quantity
+          default: 1
+        max_node_quantity:
+          title: Max Node Quantity
+          type: number
+          description: Specifies the Node Group max quantity
+          default: 3
+        rolearn:
+          title: EKS role_arn acess
+          type: string
+          description: Specifies the EKS Cluster role_arn acess
+        
+    - title: Terraform Configuration
+      required:
+        - terraformStateBucketName
+        - terraformStateBucketRegion
+      properties:
+        terraformStateBucketName:
+          title: Terraform State Bucket Name
+          type: string
+          description: Specifies your Terraform State Bucket
+
+        terraformStateBucketRegion:
+          title: Bucket Region
+          type: string
+          description: Specifies the Terraform State Bucket region
+          default: 'us-east-1'
+          enum:
+            - 'us-east-2'
+            - 'us-east-1'
+            - 'us-west-1'
+            - 'us-west-2'
+          enumNames:
+            - 'US East (Ohio)'
+            - 'US East (N. Virginia)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+          
         infracost:
           title: Enable Infracost Estimate
           type: boolean
           default: false
 
+    ### Location Configuration
     - title: Choose a location
       required:
         - repoUrl
@@ -65,21 +162,21 @@ spec:
       input:
         url: ./skeleton      
         values:
-          eks_cluster_name: ${{ parameters.reuseResource | parseJSON | pick('name')}}
+          
+          vpc_id: ${{ parameters.reuseResource | parseJSON | pick('vcp_id')}}
+          vpc_name: ${{ parameters.reuseResource | parseJSON | pick('vcp_name')}}
+          eks_cluster_name: ${{ parameters.eks_cluster_name }}
           owner: ${{ parameters.owner }}
-          k8s_version: ${{ parameters.reuseResource | parseJSON | pick('k8s_version')}}
-          cidr_block : ${{ parameters.reuseResource | parseJSON | pick('cidr_block')}}
-          private_subnets : ${{ parameters.reuseResource | parseJSON | pick('private_subnets')}}
-          public_subnets : ${{ parameters.reuseResource | parseJSON | pick('public_subnets')}}
-          instance_type: ${{ parameters.reuseResource | parseJSON | pick('instance_type')}}
-          capacity_type: ${{ parameters.reuseResource | parseJSON | pick('capacity_type')}}
-          node_quantity: ${{ parameters.reuseResource | parseJSON | pick('node_quantity')}}
-          max_node_quantity: ${{ parameters.reuseResource | parseJSON | pick('max_node_quantity')}}
+          k8s_version: ${{ parameters.k8s_version }}
+          instance_type: ${{ parameters.instance_type }}
+          capacity_type: ${{ parameters.capacity_type }}
+          node_quantity: ${{ parameters.node_quantity }}
+          max_node_quantity: ${{ parameters.max_node_quantity }}
           rolearn: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
-          terraformStateBucketName: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
-          host: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
           infracost: ${{ parameters.infracost }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           domain: ${{ parameters.reuseResource | parseJSON | pick('domain')}}

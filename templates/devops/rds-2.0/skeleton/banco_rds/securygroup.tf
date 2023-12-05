@@ -1,5 +1,5 @@
 resource "aws_security_group" "prod-rds-instance" {
-  vpc_id      = aws_db_subnet_group.postgres-subnet.id
+  vpc_id      = data.aws_vpc_rds.id
   name        = "allow-ssh"
   description = "security group that allows ssh and all egress traffic"
   egress {
@@ -21,7 +21,7 @@ resource "aws_security_group" "prod-rds-instance" {
 }
 
 resource "aws_security_group" "allow-postgres" {
-  vpc_id      = aws_db_subnet_group.postgres-subnet.id
+  vpc_id      = data.aws_vpc_rds.id
   name        = "allow-postgresl"
   description = "allow-postgresl"
   ingress {

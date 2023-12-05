@@ -30,9 +30,9 @@
   performance_insights_retention_period: ${{ values.performance_insights_retention_period }}
   deletion_protection: ${{ values.deletion_protection }}
   storage_encrypted: ${{ values.encrypted_storage }}
-  tags: 
-      Application : "${{ values.componentId }}"
+  tags: |
+      Application = "${{ values.componentId }}"
     {% for tag,value in values.tags  %} 
-      ${{ tag }} :"${{ value }}"
+      ${{ tag }} = "${{ value }}"
     {% endfor %}
 name_suffix: ${{ values.structure_automation }} # vpc

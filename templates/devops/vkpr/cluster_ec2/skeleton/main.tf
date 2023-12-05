@@ -90,10 +90,10 @@ resource "aws_instance" "platform_ec2" {
   ami                    = data.aws_ami.amazon-linux.id
   key_name               = local.config.keypar
   security_groups        = [aws_security_group.web_security_group.id]
-  instance_type          = local.config.local.config.instance_type
+  instance_type          = local.config.instance_type
   subnet_id              = aws_subnet.public_subnet.id
   user_data = <<EOF
-'#!/bin/bash'
+#!/bin/bash
 sudo yum update && sudo yum upgrade
 sudo yum install -y curl-minimal wget openssl git unzip docker sed
 sudo service docker start && sudo systemctl enable docker.service
@@ -102,9 +102,9 @@ wget -q -O - https://raw.githubusercontent.com/rancher/k3d/main/install.sh | bas
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.7/2023-11-02/bin/linux/amd64/kubectl
 chmod +x ./kubectl && mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
-k3d cluster create k3s --servers 1 -p "80:80@loadbalancer" -p "443:443@loadbalancer" --api-port 6550 --insecure-skip-tls-verify --k3s-arg "--disable=traefik@server:*" --kubeconfig-update-default
-CERTIFICATE=`cat $HOME/.kube/config |grep client-certificate-data`
-sed -i "s|$CERTIFICATE|    insecure-skip-tls-verify: true|g" $HOME/.kube/config
+k3d cluster create k3s --servers 1 -p "80:80@loadbalancer" -p "443:443@loadbalancer" --api-port 6550  --k3s-arg "--disable=traefik@server:*" --kubeconfig-update-default
+#CERTIFICATE=`cat $HOME/.kube/config |grep client-certificate-data`
+#sed -i "s|$CERTIFICATE|    insecure-skip-tls-verify: true|g" $HOME/.kube/config
 
 EOF
   tags = {
@@ -130,4 +130,6 @@ resource "aws_efs_mount_target" "mount" {
 }
 
 
-
+output "instance_ip_addr" {
+  value       = aws_eip.webip.public_ip
+}
