@@ -44,6 +44,40 @@ spec:
             type: string
             default: "5000"
 
+    - title: Database Configuration
+      properties:
+        database_window:
+          title: Are you going to use a database?
+          type: object
+          properties:
+            database_window_mode:
+              title: "Select a database of your choice"  
+              type: string
+              enum:
+              - default
+              - custom
+              enumNames:
+              - 'None'
+              - 'Choose a database'
+              default: default
+          dependencies:
+            database_window_mode:
+                oneOf:
+                - properties:
+                   database_window_mode:
+                     enum:
+                        - default          
+                - properties:
+                    database_window_mode:
+                      enum:
+                        - custom
+                    reuseResource:
+                      title: Select a Database from our catalog
+                      type: string
+                      ui:field: ResourcePicker
+                      ui:options:
+                        catalogFilter:
+                          kind: [Database]
 
     - title: Docker Registry
       properties:
@@ -189,8 +223,20 @@ spec:
           specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
           specTags: ${{ parameters.specTags }}
-    
+          use_database: ${{ parameters.database_window.database_window_mode }}
+          database_host: ${{ parameters.reuseResource | parseJSON | pick('name') }}
+          database_name: ${{ parameters.reuseResource | parseJSON | pick('name') }}
+          database_user: ${{ parameters.reuseResource | parseJSON | pick('name') }}
+          database_password: ${{ parameters.reuseResource | parseJSON | pick('database_password') }}
+          database_port: ${{ parameters.reuseResource | parseJSON | pick('database_port') }}
 
+    - name: Check Database
+      if: ${{ parameters.database_window.database_window_mode === "default" }} 
+      action: fs:delete
+      input:
+        files: 
+          - ./src/database.js
+   
     - id: publish
       name: Publish
       action: publish:github
