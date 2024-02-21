@@ -4,7 +4,8 @@ data "aws_iam_policy" "ebs_csi_policy" {
 
 module "cluster" {
   source  = "gitlab.com/vkpr/terraform-aws-eks/aws"
-  version = "~> 1.4.0"
+  version = "~> 1.5.0"
+  vpc_id                    = local.config.vpc_id
   vpc_name                  = local.config.vpc_name
   cluster_name              = local.config.cluster_name
   cluster_version           = local.config.cluster_version

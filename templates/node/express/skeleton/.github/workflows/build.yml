@@ -1,7 +1,11 @@
 name: deploy 
 on:
   workflow_dispatch:
-
+{%- if values.cluster_type == "ec2" %}
+env:
+  PORT: 6550
+  USERNAME: ec2-user
+{%- endif %}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -113,25 +117,23 @@ jobs:
           NAME=`echo $GITHUB_REPOSITORY |awk -F / '{print $2 }'`
           echo $NAME
           touch "api/$NAME.yaml"
-          sed --in-place "s|\"|'|g" ./openapi-swagger.yaml
           yq eval ".apiVersion = \"backstage.io/v1alpha1\"" -i "api/$NAME.yaml"
           yq eval ".kind = \"API\" " -i "api/$NAME.yaml"
           yq eval ".metadata.name=strenv(NAME)" -i "api/$NAME.yaml"
           yq eval ".metadata.title=strenv(NAME)" -i "api/$NAME.yaml"
           yq eval ".metadata.publishedAt=\"$(date '+%Y-%m-%d %T')\"" -i "api/$NAME.yaml"
-          yq eval ".metadata.description= \"$(cat ./openapi-swagger.yaml | yq e '.info.description')\"" -i "api/$NAME.yaml"
-          {%- if values.specTags == "custom" %} yq eval ".metadata.tags = (strenv($TAGS) | sub(\" +\", \"\") | split(\",\"))" -i "api/$NAME.yaml" {%- endif %}
+          yq eval ".metadata.tags = (strenv(TAGS) | sub(\" +\", \"\") | split(\",\"))" -i "api/$NAME.yaml"
           yq eval ".spec.type = \"openapi\"" -i "api/$NAME.yaml"
           yq eval ".spec.lifecycle = \"production\"" -i "api/$NAME.yaml"
           yq eval ".spec.owner = \"consumer\"" -i "api/$NAME.yaml"
-          yq eval ".spec.definition = \"$(yq -I4 ./openapi-swagger.yaml)\"" --inplace "api/$NAME.yaml"
-
+          cat "api/$NAME.yaml"
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{'${{'}} secrets.AWS_ACCESS_KEY ${{'}}'}}
+          aws-secret-access-key: ${{'${{'}} secrets.AWS_SECRET_KEY ${{'}}'}}
+          aws-region: ${{'${{'}} secrets.AWS_REGION ${{'}}'}}
 
       - name: Creating K8s Artifacts
         run: |
@@ -152,7 +154,7 @@ jobs:
           .spec.template.spec.containers[0].resources.requests.memory= "256Mi" |
           .spec.template.spec.containers[0].resources.limits.memory= "768Mi" |
           .spec.template.metadata.annotations."sidecar.opentelemetry.io/inject"= "true" |
-          .spec.template.metadata.annotations."instrumentation.opentelemetry.io/inject-java"= "true" |
+          .spec.template.metadata.annotations."instrumentation.opentelemetry.io/inject-nodejs"= "true" |
           del(.status) | del(.metadata.creationTimestamp) | del(.spec.template.metadata.creationTimestamp) | del(.spec.strategy)
           ''' -i ./k8s/deployment.yaml
           cat ./k8s/deployment.yaml
@@ -161,26 +163,37 @@ jobs:
           --tcp=${{ values.port}}:${{values.port}} --dry-run=client -o=yaml > ./k8s/service.yaml
           yq e '''
           .metadata.annotations."sidecar.opentelemetry.io/inject"= "true" |
-          .metadata.annotations."instrumentation.opentelemetry.io/inject-java"= "true" |
+          .metadata.annotations."instrumentation.opentelemetry.io/inject-nodejs"= "true" |
           del(.metadata.creationTimestamp) | del(.status) |
           .metadata.labels."backstage.io/kubernetes-id"="${{values.componentId}}"''' -i ./k8s/service.yaml
           yq e '.spec.selector.app="${{values.componentId}}"' -i ./k8s/service.yaml
           cat ./k8s/service.yaml
 
-          kubectl create ingress ${{values.componentId}} --class=kong --namespace=vkpr \
+          {%- if values.cluster_type == "eks" %}
+          kubectl create ingress ${{values.componentId}} --class=nginx --namespace=vkpr \
           --annotation "cert-manager.io/cluster-issuer"="certmanager-issuer" \
-          --annotation "konghq.com/https-redirect-status-code"="308" \
           --annotation "kubernetes.io/tls-acme"="true" \
-          --annotation "konghq.com/strip-path"="true" \
-          --annotation "konghq.com/preserve-host"="true" \
-          --annotation "konghq.com/protocols"="https" \
+          --annotation "nginx.ingress.kubernetes.io/rewrite-target"="/" \
           --annotation "sidecar.opentelemetry.io/inject"="true" \
-          --annotation "instrumentation.opentelemetry.io/inject-java"="true" \
-          --rule="rest.apr.vee.codes/${{values.componentId}}*=${{values.componentId}}-service-0:${{values.port}},tls=rest.apr.vee.codes-tls" --dry-run=client -o=yaml > ./k8s/ingress.yaml
+          --annotation "instrumentation.opentelemetry.io/inject-nodejs"="true" \
+          --rule="${{ values.domain }}/${{values.componentId}}*=${{values.componentId}}-service-0:${{values.port}}" --dry-run=client -o=yaml > ./k8s/ingress.yaml
           yq e 'del(.metadata.creationTimestamp) | del(.status)' -i ./k8s/ingress.yaml
           yq e '.metadata.labels."backstage.io/kubernetes-id"="${{values.componentId}}"' -i ./k8s/ingress.yaml
           cat ./k8s/ingress.yaml
-          
+          {%- endif %}
+
+          {%- if values.cluster_type == "ec2" %}
+          kubectl create ingress ${{values.componentId}} --class=nginx --namespace=vkpr \
+          --annotation "kubernetes.io/tls-acme"="true" \
+          --annotation "nginx.ingress.kubernetes.io/rewrite-target"="/" \
+          --annotation "sidecar.opentelemetry.io/inject"="true" \
+          --annotation "instrumentation.opentelemetry.io/inject-nodejs"="true" \
+          --rule="/${{values.componentId}}*=${{values.componentId}}-service-0:5000" --dry-run=client -o=yaml > ./k8s/ingress.yaml
+          yq e 'del(.metadata.creationTimestamp) | del(.status)' -i ./k8s/ingress.yaml
+          yq e '.metadata.labels."backstage.io/kubernetes-id"="${{values.componentId}}"' -i ./k8s/ingress.yaml
+          cat ./k8s/ingress.yaml
+          {%- endif %}
+
           yq e '''
               .apiVersion="argoproj.io/v1alpha1" |
               .kind="Application" |
@@ -194,10 +207,36 @@ jobs:
               .spec.destination.server="https://kubernetes.default.svc" |
               .spec.destination.namespace="vkpr"''' -i config/${{values.componentId}}.yaml
 
+      {%- if values.cluster_type == "eks" %}
       - name: k8s apply
         run: |
           aws eks update-kubeconfig --name ${{ values.cluster_name}} --region ${{'${{'}} secrets.AWS_REGION ${{'}}'}}
           kubectl apply -f ./k8s 
+      {%- endif %}
+
+      {%- if values.cluster_type == "ec2" %}
+      - name: Write secret to file
+        run: |
+          echo "${{'${{'}} secrets.KEYPAIR ${{'}}'}}" > cert.pem
+          chmod 600 cert.pem
+
+      - name: Generate kube config with k3s  		
+        run: |
+          HOST=`aws ec2 describe-instances --filters 'Name=tag:Name,Values=${{ values.cluster_name }}'  --output text --query 'Reservations[*].Instances[*].PublicIpAddress'`
+          ssh -i ./cert.pem -o StrictHostKeyChecking=no $USERNAME@$HOST "mkdir -p .kube && k3d kubeconfig get k3s > ~/.kube/config"
+          echo "Host=$HOST" >> $GITHUB_ENV
+          
+      - name: kubeclt apply
+        run: |
+           mkdir -p ~/.kube
+           scp -i ./cert.pem -o StrictHostKeyChecking=no $USERNAME@${{'${{'}} env.Host ${{'}}'}}:~/.kube/config ~/.kube/config
+           CERTIFICATE=`cat  ~/.kube/config |grep certificate-authority-data `
+           sed -i "s|$CERTIFICATE|    insecure-skip-tls-verify: true|g" ~/.kube/config
+           sed -i "s|0.0.0.0|${{'${{'}} env.Host ${{'}}'}}|g" ~/.kube/config
+           kubectl create ns vkpr --dry-run=client -o yaml | kubectl apply -f -
+           kubectl apply -f ./k8s 
+      {%- endif %}
+
 
       - name: Publish to spec house
         uses: dmnemec/copy_file_to_another_repo_action@main

@@ -17,10 +17,10 @@ data "aws_ami" "amazon-linux" {
 
 ### REDE
 resource "aws_internet_gateway" "igw" {
-  vpc_id = local.config.VCP_ID
+  vpc_id = local.config.VPC_ID
 }
 resource "aws_subnet" "public_subnet" {
-  vpc_id = local.config.VCP_ID
+  vpc_id = local.config.VPC_ID
   cidr_block = local.config.publicsCIDRblock
   map_public_ip_on_launch = "true" 
   availability_zone = local.config.availabilityZone
@@ -29,7 +29,7 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 resource "aws_route_table" "public_rt" {
-  vpc_id = local.config.VCP_ID
+  vpc_id = local.config.VPC_ID
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
@@ -46,7 +46,7 @@ resource "aws_route_table_association" "public" {
 resource "aws_security_group" "web_security_group" {
   name        = "access_cluster_SG"
   description = "Allow SSH and HTTP"
-  vpc_id      = local.config.VCP_ID
+  vpc_id      = local.config.VPC_ID
   ingress {
     description = "SSH from VPC"
     from_port   = 22
@@ -72,6 +72,13 @@ resource "aws_security_group" "web_security_group" {
     description = "Cluster Access"
     from_port   = 6550
     to_port     = 6550
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    }
+  ingress {
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
     }
@@ -105,8 +112,8 @@ chmod +x ./kubectl && mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && ex
 k3d cluster create k3s --servers 1 -p "80:80@loadbalancer" -p "443:443@loadbalancer" --api-port 6550  --k3s-arg "--disable=traefik@server:*" --kubeconfig-update-default
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm install ingress-nginx ingress-nginx/ingress-nginx
-EOF
 
+EOF
   tags = {
   Name = local.config.cluster_name
   Template = "Platform_Ec2"

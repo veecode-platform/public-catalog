@@ -1,1 +1,3 @@
-# README
+# ${{ values.componentId }}
+
+## ${{ values.description }}

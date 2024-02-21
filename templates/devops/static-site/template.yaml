@@ -24,6 +24,7 @@ spec:
         name:
           title: Site name
           type: string
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
           description: Specifies the site name
         owner:
           title: Owner

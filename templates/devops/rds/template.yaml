@@ -16,17 +16,25 @@ spec:
   parameters:
     - title: RDS Configuration
       required:
-        - name
-        - username
-        - password
         - instance_name
+        - database_name
         - instance_type
+        - vault_address
         - owner
       properties:
         instance_name:
           title: RDS Instance Name
           type: string
+          pattern: '^[a-z0-9.]*$'
+          ui:help: 'This field cannot contain special characters, "-" or "_"'
           description: Specifies the RDS Instance Name
+        vault_address:
+          title: Select vault endpoint
+          type: string
+          description: Specifies the RDS Instance Name
+          default: https://vault.apr.vee.codes/
+          enum:
+            - https://vault.apr.vee.codes/
         owner:
           title: Owner
           type: string
@@ -54,19 +62,12 @@ spec:
             - "db.t4g.micro (vCPU:2, Mem: 1Gib) ARM"
             - "db.m6g.large (vCPU:2, Mem: 8Gib) ARM"
             - "db.m6g.xlarge (vCPU:4, Mem: 16Gib) ARM"
-        name:
+        database_name:
           title: Database Name
           type: string
+          pattern: '^[a-z0-9.]*$'
+          ui:help: 'This field cannot contain special characters, "-" or "_"'
           description: Specifies the Database Name
-        username:
-          title: Username
-          type: string
-          description: Specifies the DB Username
-        password:
-          title: Password
-          type: string
-          ui:widget: password
-          description: Specifies the DB Password
 
     - title: Terraform Configuration
       required:
@@ -129,15 +130,17 @@ spec:
       input:
         url: ./skeleton      
         values:
-          name: ${{ parameters.name }}
-          username: ${{ parameters.username }}
-          password: ${{ parameters.password }}
+          name: ${{ parameters.instance_name}}
           instance_name: ${{ parameters.instance_name }}
+          database_name: ${{ parameters.database_name }}
           instance_type: ${{ parameters.instance_type }}
           terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
           destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           owner: ${{ parameters.owner }}
+          host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
+          infracost: ${{ parameters.infracost }}
+          vault_address: ${{ parameters.vault_address }}
     
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}

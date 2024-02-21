@@ -10,7 +10,6 @@ spec:
     - ./devops/eks/template.yaml
     - ./devops/rds/template.yaml
     - ./devops/ecs/template.yaml
-    - ./devops/rds-2.0/template.yaml
     - ./devops/insomnia-project/template.yaml
     - ./devops/openapi-project/template.yaml
     - ./devops/start-stop-ec2/template.yaml

@@ -9,3 +9,7 @@ provider "kubernetes" {
   cluster_ca_certificate = module.cluster.cluster_certificate_authority_data
   token                  = module.cluster.kubeconfig_token
 }
+provider "vault" {
+  address = local.config.vault_address
+  token =  local.config.vault_token
+  }

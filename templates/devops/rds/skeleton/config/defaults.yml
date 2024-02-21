@@ -1,9 +1,10 @@
----
+identifier: "${{ values.instance_name }}"
 allocated_storage: 10
 engine: "postgres"
-engine_version: "14"
+engine_version: "15"
 instance_class: "${{ values.instance_type }}"
-name: "${{ values.name }}"
-username: "${{ values.username }}"
-password: "${{ values.password }}"
-skip_final_snapshot: false
+instance_name: "${{ values.database_name }}"
+username: "postgres"
+password: 
+skip_final_snapshot: true
+vault_address: "${{ values.vault_address }}"

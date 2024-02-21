@@ -15,6 +15,16 @@ spec:
   owner: veecode/platform
   type: devops
   parameters:
+  ### Enviroment Configuration
+    - title: Enviroment Settings
+      properties:
+        reuseResource:
+          title: Select the enviromnet from our catalog
+          type: string
+          ui:field: ResourcePicker
+          ui:options:
+            catalogFilter:
+              kind: [Environment]
     ### Project Configuration
     - title: EC2 Configuration
       required:
@@ -26,7 +36,8 @@ spec:
         cluster_name:
           title: EC2 Cluster name
           type: string
-          description: Specifies the EKS Cluster name
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
+          description: Specifies the Cluster name
         owner:
           title: Owner
           type: string
@@ -58,19 +69,16 @@ spec:
           title: Keypair Name to Access the Ec2
           type: string
           description: Specifies your Key pair to access the ec2
+          
     - title: Network Configuration
       required:
-        - VPC
         - availabilityZone
         - subnet
       properties:
-        VPC:
-          title: Specifies VPC ID
-          type: string
-          description: Specifies VPC ID
         availabilityZone:
           title: Availability Zone the start Ec2
           type: string
+          default: 'us-east-1a'
           description: Specifies Availability Zone the ec2
         subnet:
           title: Specifies CIDRblock the subnet
@@ -86,7 +94,6 @@ spec:
           title: Terraform State Bucket Name
           type: string
           description: Specifies your Terraform State Bucket
-
         terraformStateBucketRegion:
           title: Bucket Region
           type: string
@@ -107,6 +114,41 @@ spec:
           title: Enable Infracost Estimate
           type: boolean
           default: false
+
+    ### Observability
+    - title: Observability
+      properties:
+        observability_window:
+          title: Observability Options
+          type: object
+          properties:
+            observability_window_mode:
+              title: Do you want to configure grafana dashboards for the application?
+              type: boolean
+              enum:
+              - false
+              - true
+              enumNames:
+              - false
+              - true
+              default: false
+          dependencies:
+            observability_window_mode:
+                oneOf:
+                - properties:
+                   observability_window_mode:
+                     enum:
+                        - false          
+                - properties:
+                    observability_window_mode:
+                      enum:
+                        - true
+
+                    observability_grafana_url:
+                      title: Insert a Grafana URL
+                      type: string
+                      default: 'https://grafana.apr.vee.codes'
+      
     ### Location Configuration
     - title: Choose a location
       required:
@@ -140,20 +182,21 @@ spec:
           instance_type: ${{ parameters.instance_type }}
           keypair: ${{ parameters.keypair }}
 ## REDE
-          VCP: ${{ parameters.VCP }}
+          VPC: ${{ parameters.reuseResource | parseJSON | pick('vpc_id') }}
           availabilityZone: ${{ parameters.availabilityZone }}
           subnet: ${{ parameters.subnet }}
           terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
           infracost: ${{ parameters.infracost }}
 #### Provider GIT
-          host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
-          destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
-          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
+          specPublish: ${{ parameters.specPublish | parseRepoUrl | pick('owner') }}/${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
+          specPublishRepo: ${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
-          componentId: ${{ parameters.componentId }}
+#### Observability
+          observability_window: ${{ parameters.observability_window.observability_window_mode }}
+          observability_grafana_url: ${{ parameters.observability_window.observability_grafana_url }}
                  
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
@@ -161,6 +204,15 @@ spec:
       input:
         files: 
           - ./.github/workflows/infracost.yml
+
+    - name: Check Observability
+      if: ${{ parameters.observability_window.observability_window_mode === false }}
+      action: fs:delete
+      input:
+        files: 
+          - ./.github/workflows/deploy_dashboard.yml
+          - ./vkpr.yaml
+          - ./dashboard-overview.json
 
     - name: Check Github Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host  === "github.com" }} 

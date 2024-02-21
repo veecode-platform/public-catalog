@@ -1,5 +1,5 @@
-apiVersion: backstage.io/v1alpha1
-kind: Component
+apiVersion: veecode.backstage.io/v1alpha1
+kind: Database
 metadata:
   name: ${{values.name | dump}}
   {%- if values.description %}
@@ -8,6 +8,12 @@ metadata:
   annotations:
     github.com/project-slug: ${{values.destination}}
     backstage.io/techdocs-ref: dir:.
+    {%- if values.host.includes("github") %}
+    github.com/workflows: terraform-deploy.yml,terraform-destroy.yml{% if values.infracost%},infracost.yml{% endif %}
+    {%- endif %}
+    {%- if values.host.includes("gitlab") %}
+    gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB{% if values.infracost%},Infracost:INFRACOST_JOB{% endif %}
+    {%- endif %}
 spec:
   type: devops
   lifecycle: experimental

@@ -3,13 +3,12 @@ kind: Template
 metadata:
   name: terraform-eks-environment
   title: Provision EKS Environment
-  description: Provision EKS Cluster using Terraform enable Vault Autentication
+  description: Provision EKS Cluster using Terraform
   annotations:
     backstage.io/techdocs-ref: dir:.
   tags:
     - platform-templates
     - k8s
-    - eks-vault
     - terraform
 spec:
   owner: veecode/platform
@@ -38,6 +37,7 @@ spec:
         eks_cluster_name:
           title: EKS Cluster name
           type: string
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
           description: Specifies the EKS Cluster name
         owner:
           title: Owner
@@ -134,6 +134,45 @@ spec:
           type: boolean
           default: false
 
+### Observability
+    - title: Observability
+      properties:
+        observability_window:
+          title: Observability Options
+          type: object
+          properties:
+            observability_window_mode:
+              title: Do you want to configure grafana dashboards for the application?
+              type: boolean
+              enum:
+              - false
+              - true
+              enumNames:
+              - false
+              - true
+              default: false
+          dependencies:
+            observability_window_mode:
+                oneOf:
+                - properties:
+                   observability_window_mode:
+                     enum:
+                        - false          
+                - properties:
+                    observability_window_mode:
+                      enum:
+                        - true
+                    observability_label:
+                      title: Set a label for the dashboard
+                      type: string
+                      pattern: '^([a-z]|[.]|[_])*$'
+                      ui:help: 'Only lower case letters and "_"'
+
+                    observability_grafana_url:
+                      title: Insert a Grafana URL
+                      type: string
+                      default: 'https://grafana.apr.vee.codes'
+
     ### Location Configuration
     - title: Choose a location
       required:
@@ -161,10 +200,9 @@ spec:
       action: fetch:template
       input:
         url: ./skeleton      
-        values:
-          
-          vpc_id: ${{ parameters.reuseResource | parseJSON | pick('vcp_id')}}
-          vpc_name: ${{ parameters.reuseResource | parseJSON | pick('vcp_name')}}
+        values:        
+          vpc_id: ${{ parameters.reuseResource | parseJSON | pick('vpc_id') }}
+          vpc_name: ${{ parameters.reuseResource | parseJSON | pick('vpc_name') }}
           eks_cluster_name: ${{ parameters.eks_cluster_name }}
           owner: ${{ parameters.owner }}
           k8s_version: ${{ parameters.k8s_version }}
@@ -172,29 +210,40 @@ spec:
           capacity_type: ${{ parameters.capacity_type }}
           node_quantity: ${{ parameters.node_quantity }}
           max_node_quantity: ${{ parameters.max_node_quantity }}
-          rolearn: ${{ parameters.reuseResource | parseJSON | pick('rolearn')}}
+          rolearn: ${{ parameters.rolearn }}
           terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
-          destination: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
-          host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
+          host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
           infracost: ${{ parameters.infracost }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           domain: ${{ parameters.reuseResource | parseJSON | pick('domain')}}
-          email: ${{ parameters.reuseResource | parseJSON | pick('cert_manager_email')}}
-          nginx: ${{ parameters.reuseResource | parseJSON | pick('nginx')}}
-          cert_manager: ${{ parameters.reuseResource | parseJSON | pick('cert_manager_issuer_type')}}
-          specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
-          specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
+          email: ${{ parameters.reuseResource | parseJSON | pick('certManagerEmail') }}
+          cert_manager: ${{ parameters.reuseResource | parseJSON | pick('certManagerIssuerType') }}
+          specPublish: ${{ parameters.specPublish | parseRepoUrl | pick('owner') }}/${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
+          specPublishRepo: ${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
           specTags: ${{ parameters.specTags }}
-          componentId: ${{ parameters.componentId }}
-                 
+          hostedZoneId: ${{ parameters.reuseResource | parseJSON | pick('hostedZoneId') }}
+   #### Observability
+          observability_window: ${{ parameters.observability_window.observability_window_mode }}
+          observability_grafana_url: ${{ parameters.observability_window.observability_grafana_url }}
+          observability_label: ${{ parameters.observability_window.observability_label }}
+
     - name: Check Infracost
       if: ${{ parameters.infracost === false }}
       action: fs:delete
       input:
         files: 
           - ./.github/workflows/infracost.yml
+
+    - name: Check Observability
+      if: ${{ parameters.observability_window.observability_window_mode === false }}
+      action: fs:delete
+      input:
+        files: 
+          - ./.github/workflows/deploy_dashboard.yml
+          - ./dashboard-overview.json
 
     - id: publish
       name: Publish in github  

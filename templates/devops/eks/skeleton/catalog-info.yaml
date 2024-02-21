@@ -1,4 +1,4 @@
-apiVersion: backstage.io/v1alpha1
+apiVersion: veecode.backstage.io/v1alpha1
 kind: Cluster
 metadata:
   name: ${{ values.eks_cluster_name | dump}}

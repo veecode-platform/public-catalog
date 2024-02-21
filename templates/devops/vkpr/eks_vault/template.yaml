@@ -29,6 +29,7 @@ spec:
         eks_cluster_name:
           title: EKS Cluster name
           type: string
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
           description: Specifies the EKS Cluster name
         owner:
           title: Owner

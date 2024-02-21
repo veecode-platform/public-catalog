@@ -27,6 +27,7 @@ spec:
         eks_cluster_name:
           title: EKS Cluster name
           type: string
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
           description: Specifies the EKS Cluster name
         owner:
           title: Owner
@@ -81,7 +82,7 @@ spec:
           title: Node Quantity
           type: number
           description: Specifies the Node Group quantity
-          default: 1
+          default: 3
         max_node_quantity:
           title: Max Node Quantity
           type: number

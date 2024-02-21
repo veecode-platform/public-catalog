@@ -11,7 +11,6 @@ metadata:
     - node
     - aws
     - github
-    - k8s
 spec:
   owner: veecode/platform
   type: service
@@ -25,6 +24,7 @@ spec:
           title: Name
           type: string
           description: Unique name of the component
+          pattern: '^([a-z0-9]|[.]|[_]|[-])*$'
           ui:field: EntityNamePicker
           ui:autofocus: true
         description:
@@ -71,7 +71,7 @@ spec:
                     database_window_mode:
                       enum:
                         - custom
-                    reuseResource:
+                    reuseResourceDatabase:
                       title: Select a Database from our catalog
                       type: string
                       ui:field: ResourcePicker
@@ -216,19 +216,22 @@ spec:
           docker_generic: ${{ parameters.docker_window.docker_generic }}
           repoUrl: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
           host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
-          cluster_name: ${{ parameters.reuseResource | parseJSON | pick('name') }}
           mockserverUrl: ${{ parameters.mockserverUrl }}  
           exportKongKubernetes: ${{ parameters.exportKongKubernetes }}
           specPublish: ${{ parameters.specPublish | parseRepoUrl | pick('owner') }}/${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
           specTags: ${{ parameters.specTags }}
+          cluster_name: ${{ parameters.reuseResource | parseJSON | pick('name') }}
+          domain: ${{ parameters.reuseResource | parseJSON | pick('domain') }}
+          cluster_type: ${{ parameters.reuseResource | parseJSON | pick('cluster_type') }}
+          cluster_public_ip: ${{ parameters.reuseResource | parseJSON | pick('public_ip') }}
           use_database: ${{ parameters.database_window.database_window_mode }}
-          database_host: ${{ parameters.reuseResource | parseJSON | pick('name') }}
-          database_name: ${{ parameters.reuseResource | parseJSON | pick('name') }}
-          database_user: ${{ parameters.reuseResource | parseJSON | pick('name') }}
-          database_password: ${{ parameters.reuseResource | parseJSON | pick('database_password') }}
-          database_port: ${{ parameters.reuseResource | parseJSON | pick('database_port') }}
+          database_host: ${{ parameters.reuseResourceDatabase | parseJSON | pick('name') }}
+          database_name: ${{ parameters.reuseResourceDatabase | parseJSON | pick('name') }}
+          database_user: ${{ parameters.reuseResourceDatabase | parseJSON | pick('name') }}
+          database_password: ${{ parameters.reuseResourceDatabase | parseJSON | pick('database_password') }}
+          database_port: ${{ parameters.reuseResourceDatabase | parseJSON | pick('database_port') }}
 
     - name: Check Database
       if: ${{ parameters.database_window.database_window_mode === "default" }} 

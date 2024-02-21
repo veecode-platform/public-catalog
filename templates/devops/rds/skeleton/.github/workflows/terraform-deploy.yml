@@ -1,0 +1,95 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+  
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+      - name: Create Master Database
+        run: |
+          MASTER=`tr -dc A-Za-z0-9 </dev/urandom | head -c 13; echo`  
+          echo "Master=$MASTER" >> $GITHUB_ENV
+      - name: Write default file
+        run: | 
+          yq e '.password = "${{'${{'}} env.Master ${{'}}'}}" ' -i config/defaults.yml
+          yq e '.vault_token = "${{'${{'}} secrets.VAULT_TOKEN ${{'}}'}}" ' -i config/defaults.yml
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+      - uses: actions/cache@v3
+        with:
+          path: |
+            .terraform/**
+            .terraform.lock.hcl
+            plan.cache
+          key: terraform-lock-${{'${{'}} github.event.workflow_run.head_branch ${{'}}'}}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{'${{'}} secrets.AWS_ACCESS_KEY ${{'}}'}}
+          aws-secret-access-key: ${{'${{'}} secrets.AWS_SECRET_KEY ${{'}}'}}
+          aws-region: us-east-2
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform init
+          terraform plan -no-color -out plan_cache.json 
+      - name: Terraform apply
+        run: terraform apply -input=false -no-color -auto-approve plan_cache.json
+      - name: Kubeconf artefact
+        uses: actions/upload-artifact@v2
+        with:
+          name: kubeconf
+          path: |
+            kube/*
+          retention-days: 1
+  Rds_Catalogo:
+    runs-on: ubuntu-latest
+    needs: apply
+    steps:
+      - uses: actions/checkout@v3
+      - uses: hashicorp/setup-terraform@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:  ${{'${{'}} secrets.AWS_ACCESS_KEY ${{'}}'}}
+          aws-secret-access-key: ${{'${{'}} secrets.AWS_SECRET_KEY ${{'}}'}}
+          aws-region:  us-east-2
+          
+      - name: GET Endpoint RDS
+        run: |
+          ENDPOINT=`aws rds describe-db-instances --db-instance-identifier ${{ values.instance_name }} --query 'DBInstances[0].Endpoint.Address'`
+          echo $ENDPOINT
+          echo "endpoint=$ENDPOINT" >> $GITHUB_ENV
+
+      - name: Write Catalogo Info
+        run: |
+          yq e '.metadata.environment.endpoint = ${{'${{'}} env.endpoint ${{'}}'}}' -i catalog-info.yaml
+          cat ./catalog-info.yaml
+
+      - name: Temporarily disable branch protection
+        uses: benjefferies/branch-protection-bot@master
+        if: always()
+        with:
+          access_token: ${{'${{'}} secrets.API_TOKEN_GITHUB ${{'}}'}}
+          branch: ${{'${{'}} github.event.repository.default_branch ${{'}}'}}
+
+      - name: Publish Catalogo Info
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{'${{'}} secrets.API_TOKEN_GITHUB ${{'}}'}}
+        with:
+          destination_branch: ${{'${{'}} github.event.repository.default_branch ${{'}}'}}
+          source_file: './catalog-info.yaml'
+          destination_repo: ${{'${{'}} github.repository ${{'}}'}}
+          destination_folder: '/'
+          commit_message: Update catalog-info.yaml in the same repo
+          user_name: ${{'${{'}} secrets.GH_USERNAME ${{'}}'}}
+          user_email: ${{'${{'}} secrets.GH_EMAIL ${{'}}'}}
+          git_server: github.com

@@ -174,28 +174,29 @@ spec:
           properties:
             observability_window_mode:
               title: Do you want to configure grafana dashboards for the application?
-              type: string
+              type: boolean
               enum:
-              - default
-              - custom
+              - false
+              - true
               enumNames:
-              - 'No'
-              - 'Yes'
-              default: default
+              - false
+              - true
+              default: false
           dependencies:
             observability_window_mode:
                 oneOf:
                 - properties:
                    observability_window_mode:
                      enum:
-                        - default          
+                        - false          
                 - properties:
                     observability_window_mode:
                       enum:
-                        - custom
+                        - true
                     observability_grafana:
                       title: Insert a Grafana URL
                       type: string
+                      default: 'https://grafana.apr.vee.codes'
 
     - title: Spec Configuration
       required:
@@ -281,11 +282,10 @@ spec:
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
 
     - name: Check Observability
-      if: ${{ parameters.observability_window.observability_window_mode === 'default' }}
+      if: ${{ parameters.observability_window.observability_window_mode === false }}
       action: fs:delete
       input:
         files: 
-          - ./.github/workflows/application-dashboards.yml
           - ./dashboards
 
     # check github

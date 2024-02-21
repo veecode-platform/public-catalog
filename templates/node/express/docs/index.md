@@ -24,3 +24,4 @@ For the project to run as expected, it is necessary to configure some secrets in
 🔑 AWS_REGION `mandatory` <br>
 🔑 DOCKER_PASSWORD `mandatory` <br>
 🔑 DOCKER_USERNAME `mandatory` <br>
+🔑 API_TOKEN_GITHUB `mandatory` <br>
