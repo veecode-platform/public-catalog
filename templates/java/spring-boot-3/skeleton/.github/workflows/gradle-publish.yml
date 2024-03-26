@@ -124,7 +124,6 @@ jobs:
               kubectl create configmap kong-metrics-${{values.componentId}} --from-file=./kong-metrics-${{values.componentId}}.json --dry-run=client -o=yaml > dashboards/kong-metrics.yml
               yq eval ".metadata.labels.grafana_dashboard=\"vkpr\" | del(.metadata.creationTimestamp)" -i dashboards/kong-metrics.yml
               
-              rm kubernetes.json
               cp ./dashboards/*.yml ./k8s
 
       {%- endif %}
