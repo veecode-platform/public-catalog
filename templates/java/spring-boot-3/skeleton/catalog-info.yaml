@@ -14,10 +14,9 @@ metadata:
     grafana/alert-label-selector: "alertname=${{values.componentId}}"
     argocd/proxy-url: '/argocd/api'
     argocd/app-name: ${{values.componentId | dump}}
+    kong-manager/service-name: vkpr.${{ values.componentId }}.${{ values.componentId }}-service-0.8080
+    kong-manager/instance: /kong-manager/api
 spec:
   type: service
   lifecycle: experimental
   owner: ${{values.owner | dump}}
-
-
-
