@@ -177,7 +177,7 @@ spec:
         repoUrl:
           title: Repository Location
           type: string
-          ui:field: RepoUrlPlatform
+          ui:field: RepoUrlSelector
           ui:options:
             allowedHosts:
               - github.com

@@ -37,7 +37,7 @@ resource "vault_database_secrets_mount" "db" {
       "dev2","readWrite","readOnly"
     ]
   }
-  depends_on = [ aws_db_instance.RDS_VKPR ]
+  depends_on = [ aws_db_instance.RDS_VKPR, null_resource.check_database_state]
 }
 
 resource "vault_database_secret_backend_role" "readOnly" {
@@ -73,5 +73,50 @@ resource "aws_db_instance" "RDS_VKPR" {
     publicly_accessible = true
     tags = {
     name = "VKPR-RDS"
+  }
+}
+
+
+resource "null_resource" "check_database_state" {
+  depends_on = [ aws_db_instance.RDS_VKPR ]
+  provisioner "local-exec" {
+
+    command = <<EOF
+#!/bin/bash
+
+# Variáveis de conexão com o banco de dados
+DB_HOST="${aws_db_instance.RDS_VKPR.address}"
+DB_USER="${aws_db_instance.RDS_VKPR.username}"
+DB_PASS="${local.config.password}"
+DB_NAME="postgres"
+
+# Número máximo de tentativas
+MAX_ATTEMPTS=30
+
+# Contador de tentativas
+attempts=0
+
+echo "Testando conexão com o banco de dados..."
+
+# Loop while para tentar a conexão até atingir o número máximo de tentativas
+while [ $attempts -lt $MAX_ATTEMPTS ]; do
+    # Tentativa de conexão com o banco de dados
+    PGPASSWORD="$DB_PASS" psql -U "$DB_USER" -h "$DB_HOST" -d "$DB_NAME" -p 5432 -c "SELECT 1;" >/dev/null 2>&1
+
+    # Verifica o código de saída do comando anterior (0 para sucesso, diferente de zero para falha)
+    if [ $? -eq 0 ]; then
+        echo "Conexão bem-sucedida!"
+        exit 0  # Conexão bem-sucedida, sair com status de sucesso
+    else
+        echo "Tentativa $((attempts+1)) falhou. Tentando novamente..."
+        attempts=$((attempts+1))
+        sleep 10  # Espera 10 segundos antes de tentar novamente
+    fi
+done
+
+# Se chegou até aqui, todas as tentativas falharam
+echo "Não foi possível conectar ao banco de dados após $MAX_ATTEMPTS tentativas."
+exit 1  # Sair com status de falha
+    EOF
   }
 }

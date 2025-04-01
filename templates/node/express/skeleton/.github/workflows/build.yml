@@ -170,7 +170,7 @@ jobs:
           cat ./k8s/service.yaml
 
           {%- if values.cluster_type == "eks" %}
-          kubectl create ingress ${{values.componentId}} --class=nginx --namespace=vkpr \
+          kubectl create ingress ${{values.componentId}} --class=${{ values.ingress }} --namespace=vkpr \
           --annotation "cert-manager.io/cluster-issuer"="certmanager-issuer" \
           --annotation "kubernetes.io/tls-acme"="true" \
           --annotation "nginx.ingress.kubernetes.io/rewrite-target"="/" \
@@ -183,7 +183,7 @@ jobs:
           {%- endif %}
 
           {%- if values.cluster_type == "ec2" %}
-          kubectl create ingress ${{values.componentId}} --class=nginx --namespace=vkpr \
+          kubectl create ingress ${{values.componentId}} --class=${{ values.ingress }} --namespace=vkpr \
           --annotation "kubernetes.io/tls-acme"="true" \
           --annotation "nginx.ingress.kubernetes.io/rewrite-target"="/" \
           --annotation "sidecar.opentelemetry.io/inject"="true" \

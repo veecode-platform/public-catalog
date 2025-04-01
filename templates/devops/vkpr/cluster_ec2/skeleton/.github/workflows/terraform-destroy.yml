@@ -58,3 +58,28 @@ jobs:
         run: |
           terraform init
           terraform destroy -auto-approve
+
+{%- if values.observability_window %}
+      #DELETE Dashboards on Grafana API
+      - name: Delete Dashboards from project
+        run: |
+          TAG="${{values.cluster_name}}"
+          # Passo 1: Verificar se existem painéis com a tag específica
+          response=$(curl -s -o /dev/null -w "%{http_code}" -X GET "${{ values.observability_grafana_url }}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
+          if [ "$response" -ne 200 ]; then
+              echo "Não foram encontrados painéis com a tag '${TAG}'. Nenhum painel será excluído."
+              exit 0
+          fi
+          # Passo 2: Obter lista de UIDs dos painéis com a tag específica
+          panel_uids=$(curl -s -X GET "${{ values.observability_grafana_url }}/api/search?tag=${TAG}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}" | jq -r '.[] | .uid')
+          
+          # Passo 3: Excluir cada painel obtido no passo 1
+          for panel_uid in $panel_uids; do
+              response=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "${{ values.observability_grafana_url }}/api/dashboards/uid/${panel_uid}" -H "Authorization: Bearer ${{'${{'}} secrets.GRAFANA_API_TOKEN ${{'}}'}}")
+              if [ "$response" -eq 200 ]; then
+                  echo "Painel com ID ${panel_uid} excluído com sucesso."
+              else
+                  echo "Erro ao excluir o painel com UID ${panel_uid}. Status code: ${response}"
+              fi
+          done
+{%- endif %}

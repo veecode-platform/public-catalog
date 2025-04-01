@@ -23,4 +23,5 @@ spec:
     - ./devops/vkpr/cluster_ec2/template.yaml
     - ./devops/vkpr/eks_ingress/template.yaml
     - ./node/express/template.yaml
+    - ./devops/spec_project/template.yaml
    

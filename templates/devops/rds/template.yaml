@@ -108,7 +108,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the RDS Pipeline
-          ui:field: RepoUrlPlatform
+          ui:field: RepoUrlSelector
           ui:options:
             allowedHosts:
               - github.com

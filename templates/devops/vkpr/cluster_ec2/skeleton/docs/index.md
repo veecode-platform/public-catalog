@@ -1,25 +1,25 @@
-# ${{ values.componentId }}
+# ${{ values.cluster_name }}
 
-${{ values.description }}
+<img src="./imgs/image1.png"/>
 
-## Getting started
+Project Description: EC2 Template
 
-Start writing your documentation by adding more markdown (.md) files to this folder (/docs) or replace the content in this file.
+This project has been developed to facilitate the deployment and configuration of EC2 instances in the AWS (Amazon Web Services) infrastructure. EC2 instances are fundamental elements in building scalable and flexible cloud infrastructures. This template offers a standardized and documented framework for quickly implementing EC2 instances, helping teams to better understand how the component works and how it can be easily reused and configured in various scenarios.
 
-## Table of Contents
+Key Features:
 
-The Table of Contents on the right is generated automatically based on the hierarchy
-of headings. Only use one H1 (`#` in Markdown) per file.
+Simplified Configuration: The EC2 template simplifies the process of configuring instances on AWS, providing clear parameters and detailed instructions for customizing instance characteristics such as type, size, operating system, and other essential resources.
 
-## Site navigation
+Integrated Security Standards: Security is a fundamental priority in the cloud. This project includes recommended security practices for EC2 instances, such as configuring security groups, access policies, and permission controls, ensuring a secure environment for your applications and data.
 
-For new pages to appear in the left hand navigation you need edit the `mkdocs.yml`
-file in root of your repo. The navigation can also link out to other sites.
+Comprehensive Documentation: In addition to simplifying deployment, this project comes with detailed documentation that describes step-by-step how to use the template, its requirements, dependencies, and best practices. This documentation serves as a valuable resource for new team members and for the ongoing maintenance of the cloud environment.
 
-Alternatively, if there is no `nav` section in `mkdocs.yml`, a navigation section
-will be created for you. However, you will not be able to use alternate titles for
-pages, or include links to other sites.
+Benefits of Using the Template:
 
-Note that MkDocs uses `mkdocs.yml`, not `mkdocs.yaml`, although both appear to work.
-See also <https://www.mkdocs.org/user-guide/configuration/>.
+Agility in Implementation: With this template, teams can deploy EC2 instances quickly and efficiently, reducing development time and enabling more agile delivery of new services and applications.
 
+Consistency and Standardization: By following a standardized model, EC2 instances are configured consistently and reliably, minimizing errors and simplifying future maintenance.
+
+Scalability and Flexibility: This project provides a solid foundation for scaling your EC2 instances as needed, easily adapting to variable workload demands and infrastructure growth.
+
+In summary, the EC2 template offers a comprehensive and documented solution for simplifying the deployment and configuration of instances on AWS, providing agility, security, and scalability for your cloud applications.

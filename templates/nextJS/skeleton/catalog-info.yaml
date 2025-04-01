@@ -8,9 +8,6 @@ metadata:
   annotations:
     github.com/project-slug: ${{values.repoUrl}}
     backstage.io/techdocs-ref: dir:.
-    vault.io/secrets-path: devportal
-    grafana/dashboard-selector: "grafanacloud"
-    grafana/alert-label-selector: "alertname=teste-aviso"
 spec:
   type: website
   lifecycle: experimental

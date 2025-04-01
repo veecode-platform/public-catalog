@@ -17,9 +17,9 @@ spec:
   ### Project Configuration
     - title: Enviroment Settings
       properties:
-        reuseResource:
+        environmentResource.:
           title: Select the enviromnet from our catalog
-          type: string
+          type: object
           ui:field: ResourcePicker
           ui:options:
             catalogFilter:
@@ -182,7 +182,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the EKS Cluster Pipeline
-          ui:field: RepoUrlPlatform
+          ui:field: RepoUrlSelector
         visibility:
           title: Repository visibility
           type: string
@@ -201,8 +201,8 @@ spec:
       input:
         url: ./skeleton      
         values:        
-          vpc_id: ${{ parameters.reuseResource | parseJSON | pick('vpc_id') }}
-          vpc_name: ${{ parameters.reuseResource | parseJSON | pick('vpc_name') }}
+          vpc_id: ${{ parameters.environmentResource.vpc_id }}
+          vpc_name: ${{ parameters.environmentResource.vpc_name }}
           eks_cluster_name: ${{ parameters.eks_cluster_name }}
           owner: ${{ parameters.owner }}
           k8s_version: ${{ parameters.k8s_version }}
@@ -217,15 +217,15 @@ spec:
           host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
           infracost: ${{ parameters.infracost }}
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
-          domain: ${{ parameters.reuseResource | parseJSON | pick('domain')}}
-          email: ${{ parameters.reuseResource | parseJSON | pick('certManagerEmail') }}
-          cert_manager: ${{ parameters.reuseResource | parseJSON | pick('certManagerIssuerType') }}
+          environment: ${{ parameters.environmentResource.name }}
+          domain: ${{ parameters.environmentResource.domain }}
+          email: ${{ parameters.environmentResource.certManagerEmail }}
+          cert_manager: ${{ parameters.environmentResource.certManagerIssuerType }}
           specPublish: ${{ parameters.specPublish | parseRepoUrl | pick('owner') }}/${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishRepo: ${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
           specTags: ${{ parameters.specTags }}
-          hostedZoneId: ${{ parameters.reuseResource | parseJSON | pick('hostedZoneId') }}
-   #### Observability
+          hostedZoneId: ${{ parameters.environmentResource.hostedZoneId }}
           observability_window: ${{ parameters.observability_window.observability_window_mode }}
           observability_grafana_url: ${{ parameters.observability_window.observability_grafana_url }}
           observability_label: ${{ parameters.observability_window.observability_label }}

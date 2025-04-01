@@ -31,11 +31,11 @@ spec:
         owner:
           title: Owner
           type: string
-          description: Owner of the component
+          description: Owner of the component (Devportal)
           ui:field: OwnerPicker
           ui:options:
-            allowedKinds:
-              - Group
+            catalogFilter:
+              kind: [Group]
 
      ### Kong Configuration
     - title: Kong Configuration
@@ -51,24 +51,86 @@ spec:
           description: Specifies the Domain to use on manager an admin API's endpoint.
         kong_mode:
           title: Do you want to use Kong with database?
-          type: string
+          type: object
           description: Specifies if you want to install Kong with database.
-          default: "dbless"
-          enum:
-            - "dbless"
-            - "standard"
+          properties:
+            kong_mode:
+              title: Chose kong's mode.
+              type: string
+              enum:
+              - dbless
+              - standard
+              enumNames:
+              - "dbless"
+              - "standard"
+              default: dbless
+              dependencies:
+                kong_mode:
+                    oneOf:
+                    - properties:
+                       kong_mode:
+                         enum:
+                            - dbless          
+                    - properties:
+                        kong_mode:
+                          enum:
+                            - standard
+                        external_db:
+                          title: Do you want to use an external database?
+                          type: boolean
+
         basic_auth:
           title: Do you want to use the basic-auth plugin to close Kong's admin API?
           type: boolean
           description: If you don't have a Kong license This will leave the Kong admin API open, Do you want to set up basic authentication?
           default: false
 
+    ### Cert-manager
+    - title: Cert-manager
+      properties:
+        certmanager_window:
+          title: Cert-manager Options
+          type: object
+          properties:
+            certmanager_window_mode:
+              title: Do you want to configure cert-manager?
+              type: boolean
+              enum:
+              - false
+              - true
+              enumNames:
+              - false
+              - true
+              default: false
+          dependencies:
+            certmanager_window_mode:
+                oneOf:
+                - properties:
+                   certmanager_window_mode:
+                     enum:
+                        - false          
+                - properties:
+                    certmanager_window_mode:
+                      enum:
+                        - true
+                    issuer_type:
+                      title: Specifies the cert-manager issuer type
+                      type: string
+                      description: Specifies the Cert-Manager issuer type.
+                      default: "staging"
+                      enum:
+                        - "staging"
+                        - "production"
+                    email:
+                      title: Email 
+                      type: string
+                      description: Specifies the email to receive certificate notifications
     # Reuse Resources
     - title: Cluster Settings
       properties:
-        reuseResource:
+        clusterResource:
           title: Select a Cluster from our catalog
-          type: string
+          type: object
           ui:field: ResourcePicker
           ui:options:
             catalogFilter:
@@ -83,7 +145,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the Access Stack Pipeline
-          ui:field: RepoUrlPlatform
+          ui:field: RepoUrlSelector
           ui:options:
             allowedHosts:
               - github.com
@@ -108,7 +170,8 @@ spec:
         url: ./skeleton      
         values:
           domain: ${{ parameters.domain }}
-          kong_mode: ${{ parameters.kong_mode }}
+          kong_mode: ${{ parameters.kong_mode.kong_mode }}
+          external_db: ${{ parameters.kong_mode.kong_mode.external_db }}
           basic_auth: ${{ parameters.basic_auth }}
           specPublish: ${{ (parameters.specPublish | parseRepoUrl).owner }}/${{ (parameters.specPublish | parseRepoUrl).repo }}
           specPublishRepo: ${{ (parameters.specPublish | parseRepoUrl).repo }}
@@ -118,8 +181,16 @@ spec:
           repoUrl: ${{ (parameters.repoUrl | parseRepoUrl).owner }}/${{ (parameters.repoUrl | parseRepoUrl).repo }}
           componentId: ${{ parameters.componentId }}
           host: ${{ (parameters.repoUrl | parseRepoUrl).host }}
-          cluster_name: ${{ parameters.reuseResource }}
-
+          
+          ### Cluster Configuration
+          cluster_name: ${{ parameters.clusterResource.name }}
+          cluster_type: ${{ parameters.clusterResource.cluster_type }}
+          cluster_public_ip: ${{ parameters.clusterResource.public_ip }}
+          ### Cert-Manager Configuration
+          certmanager_window_mode: ${{ parameters.certmanager_window.certmanager_window_mode }}
+          issuer_type: ${{ parameters.certmanager_window.issuer_type }}
+          email: ${{ parameters.certmanager_window.email }}
+          
     # check github
     - name: Check Github Provider
       if: ${{ (parameters.repoUrl | parseRepoUrl).host === "github.com" }} 
@@ -163,3 +234,12 @@ spec:
       input:
         repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
         catalogInfoPath: /catalog-info.yaml
+        
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+  

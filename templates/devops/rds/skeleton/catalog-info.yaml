@@ -15,6 +15,6 @@ metadata:
     gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB{% if values.infracost%},Infracost:INFRACOST_JOB{% endif %}
     {%- endif %}
 spec:
-  type: devops
+  type: rds
   lifecycle: experimental
   owner: ${{values.owner | dump}}

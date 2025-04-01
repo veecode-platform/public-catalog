@@ -22,7 +22,8 @@ metadata:
     grafana/alert-label-selector: "alertname=${{ values.eks_cluster_name }}"
     {%- endif %}
 spec:
-  type: devops
+  type: eks
   lifecycle: experimental
   owner: ${{values.owner | dump}}
+  dependsOn: ["environment:default/${{ values.environment}}"]
   

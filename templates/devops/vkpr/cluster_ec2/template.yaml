@@ -10,7 +10,7 @@ metadata:
     - platform-templates
     - k8s
     - ec2
-    - terraform
+    - iac
 spec:
   owner: veecode/platform
   type: devops
@@ -18,9 +18,9 @@ spec:
   ### Enviroment Configuration
     - title: Enviroment Settings
       properties:
-        reuseResource:
+        environmentResource:
           title: Select the enviromnet from our catalog
-          type: string
+          type: object
           ui:field: ResourcePicker
           ui:options:
             catalogFilter:
@@ -114,6 +114,23 @@ spec:
           title: Enable Infracost Estimate
           type: boolean
           default: false
+    ### Ngnix
+    - title: Ngnix
+      properties:
+        ngnix_window:
+          title: ngnix Options
+          type: object
+          properties:
+            ngnix_window_mode:
+              title: Do you want to configure ngnix ingress?
+              type: boolean
+              enum:
+              - false
+              - true
+              enumNames:
+              - false
+              - true
+              default: false
 
     ### Observability
     - title: Observability
@@ -158,7 +175,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the EKS Cluster Pipeline
-          ui:field: RepoUrlPlatform
+          ui:field: RepoUrlSelector
         visibility:
           title: Repository visibility
           type: string
@@ -181,20 +198,19 @@ spec:
           owner: ${{ parameters.owner }}
           instance_type: ${{ parameters.instance_type }}
           keypair: ${{ parameters.keypair }}
-## REDE
-          VPC: ${{ parameters.reuseResource | parseJSON | pick('vpc_id') }}
+          environment: ${{ parameters.environmentResource.name}}
+          VPC: ${{ parameters.environmentResource.vpc_id }}
           availabilityZone: ${{ parameters.availabilityZone }}
           subnet: ${{ parameters.subnet }}
           terraformStateBucketName: ${{ parameters.terraformStateBucketName }}
           terraformStateBucketRegion: ${{ parameters.terraformStateBucketRegion }}
           infracost: ${{ parameters.infracost }}
-#### Provider GIT
           host: ${{ parameters.repoUrl | parseRepoUrl | pick('host') }}
           destination: ${{ parameters.repoUrl | parseRepoUrl | pick('owner') }}/${{ parameters.repoUrl | parseRepoUrl | pick('repo') }}
           specPublish: ${{ parameters.specPublish | parseRepoUrl | pick('owner') }}/${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishRepo: ${{ parameters.specPublish | parseRepoUrl | pick('repo') }}
           specPublishBranch: ${{ parameters.specPublishBranch }}
-#### Observability
+          ngnix_window: ${{ parameters.ngnix_window.observability_window_mode }}    
           observability_window: ${{ parameters.observability_window.observability_window_mode }}
           observability_grafana_url: ${{ parameters.observability_window.observability_grafana_url }}
                  

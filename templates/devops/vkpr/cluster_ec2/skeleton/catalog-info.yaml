@@ -16,7 +16,7 @@ metadata:
     {%- endif %}
     backstage.io/techdocs-ref: dir:.
     {%- if values.host.includes("github")%}
-    github.com/workflows: terraform-deploy.yml,start_instance.yml,stop_instance.yml,terraform-destroy.yml,deploy_dashboard{% if values.infracost%},infracost.yml{% endif %}
+    github.com/workflows: terraform-deploy.yml,start-instance.yml,stop-instance.yml,terraform-destroy.yml,deploy-dashboard{% if values.infracost%},infracost.yml{% endif %}
     {%- endif %}
     {%- if values.host.includes("gitlab")%}
     gitlab.com/jobs: Deploy:DEPLOY_JOB,Destroy:DESTROY_JOB{% if values.infracost%},Infracost:INFRACOST_JOB{% endif %}
@@ -26,7 +26,8 @@ metadata:
     grafana/alert-label-selector: "alertname=${{values.cluster_name}}"
     {%- endif %}
 spec:
-  type: devops
+  type: ec2
   lifecycle: experimental
   owner: ${{values.owner | dump}}
+  environment: 'environment:default/${{ values.environment}}'
   

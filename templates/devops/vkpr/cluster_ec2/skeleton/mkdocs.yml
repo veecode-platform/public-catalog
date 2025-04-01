@@ -1,5 +1,5 @@
-site_name: ${{values.componentId | dump}}
-site_description: ${{values.description | dump}}
+site_name: ${{ values.cluster_name }}
+site_description: Cluster EC2 made with Platform Template.
 
 nav:
   - Introduction: index.md

@@ -134,7 +134,7 @@ spec:
           title: Repository Location
           type: string
           description: Choose a location to create the EKS Cluster Pipeline
-          ui:field: RepoUrlPlatform
+          ui:field: RepoUrlSelector
         visibility:
           title: Repository visibility
           type: string
